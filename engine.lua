@@ -501,7 +501,8 @@ end
 local MAX_TAUNT_PER_10_SEC = 4
 
 function Stack.can_taunt(self)
-  return self.taunt_queue:len() < MAX_TAUNT_PER_10_SEC or self.taunt_queue:peek() + 10 < love.timer.getTime()
+  --return self.taunt_queue:len() < MAX_TAUNT_PER_10_SEC or self.taunt_queue:peek() + 10 < love.timer.getTime()
+  return true
 end
 
 function Stack.taunt(self, taunt_type)
