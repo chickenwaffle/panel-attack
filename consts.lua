@@ -104,8 +104,8 @@ stop_time_combo =  {120, 120, 120, 90}
 stop_time_chain =  {300, 180, 120, 90}
 stop_time_danger = {600, 420, 240, 180}
 
-difficulty_to_ncolors_endless = {5,6,6,6}
-difficulty_to_ncolors_1Ptime = {6,6,6,6}
+difficulty_to_ncolors_endless = {8,8,8,8}
+difficulty_to_ncolors_1Ptime = {8,8,8,8}
 
 time_attack_time = 120
 -- Yes, 2 is slower than 1 and 50..99 are the same.
@@ -154,9 +154,9 @@ level_to_starting_speed        = {  1,  5,  9, 13, 17, 21, 25, 29, 27, 32, 45}
 -- How long you can spend at the top of the screen without dying, in frames ("Health").
 level_to_hang_time             = {121,101, 81, 66, 51, 41, 31, 21, 11,  1, 1}
 -- How many colors of panels can spawn in VS mode, not including metal panels.
-level_to_ncolors_vs            = {  5,  5,  5,  5,  5,  5,  5,  5,  6,  6, 6}
+level_to_ncolors_vs            = {  8,  8,  8,  8,  8,  8,  8,  8,  8,  8, 8}
 -- How many colors of panels can spawn in time trial mode.
-level_to_ncolors_time          = {  5,  5,  6,  6,  6,  6,  6,  6,  6,  6, 6}
+level_to_ncolors_time          = {  8,  8,  8,  8,  8,  8,  8,  8,  8,  8, 8}
 -- How long panels will hover if not supported by anything, in frames.
 level_to_hover                 = { 12, 12, 11, 10,  9,  6,  5,  4,  3,  6, 3}
 -- How long newly-transformed panels from garbage will hover before falling, in frames.
