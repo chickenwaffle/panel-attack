@@ -891,6 +891,13 @@ function Stack.hasPendingAction(self)
   return self.n_active_panels > 0 or self.n_prev_active_panels > 0
 end
 
+function Stack.chainfreeze(self)
+  local freezeSeconds = 4
+  local result = self.game_stopwatch % (freezeSeconds * 120)
+
+  return result < freezeSeconds * 60
+end
+
 function Stack.has_falling_garbage(self)
   for i = 1, self.height + 3 do --we shouldn't have to check quite 3 rows above height, but just to make sure...
     local panelRow = self.panels[i]
@@ -1260,9 +1267,9 @@ function Stack.simulate(self)
       self.game_stopwatch_running = true
     end
 
-    if self.pre_stop_time ~= 0 then
+    if self.pre_stop_time ~= 0 and not self:chainfreeze() then
       self.pre_stop_time = self.pre_stop_time - 1
-    elseif self.stop_time ~= 0 then
+    elseif self.stop_time ~= 0 and not self:chainfreeze() then
       self.stop_time = self.stop_time - 1
     end
 
@@ -1300,7 +1307,7 @@ function Stack.simulate(self)
 
     -- Phase 0 //////////////////////////////////////////////////////////////
     -- Stack automatic rising
-    if self.speed ~= 0 and not self.manual_raise and self.stop_time == 0 and not self.rise_lock then
+    if self.speed ~= 0 and not self.manual_raise and self.stop_time == 0 and not self.rise_lock and not self:chainfreeze() then
       if self.match.mode == "puzzle" then
         -- only reduce health after the first swap to give the player a chance to strategize
         if self.puzzle.puzzleType == "clear" and self.puzzle.remaining_moves - self.puzzle.moves < 0 and self.shake_time < 1 then
@@ -1704,7 +1711,9 @@ function Stack.simulate(self)
           if not self.prevent_manual_raise then
             self.score = self.score + 1
           end
-          self.prevent_manual_raise = true
+          if not self:chainfreeze() then
+            self.prevent_manual_raise = true
+          end
         end
         self.manual_raise_yet = true --ehhhh
         self.stop_time = 0
@@ -2379,7 +2388,12 @@ end
 
 -- Goes through whole stack checking for matches and updating chains etc based on matches.
 function Stack.check_matches(self)
+  
   if self.do_countdown then
+    return
+  end
+
+  if self:chainfreeze() then
     return
   end
 
