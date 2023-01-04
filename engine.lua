@@ -1267,7 +1267,7 @@ function Stack.simulate(self)
       self.game_stopwatch_running = true
     end
 
-    if self.pre_stop_time ~= 0 and not self:chainfreeze() then
+    if self.pre_stop_time ~= 0 then
       self.pre_stop_time = self.pre_stop_time - 1
     elseif self.stop_time ~= 0 and not self:chainfreeze() then
       self.stop_time = self.stop_time - 1
