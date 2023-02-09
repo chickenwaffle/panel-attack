@@ -2652,7 +2652,7 @@ function Stack.check_matches(self)
       end
     end
     self.analytic:register_destroyed_panels(combo_size)
-    if (combo_size > 3) then
+    if (combo_size > 2) then
       if (score_mode == SCOREMODE_TA) then
         if (combo_size > 30) then
           combo_size = 30
@@ -2703,7 +2703,7 @@ function Stack.check_matches(self)
       end
       self.score = self.score + score_chain_TA[chain_bonus]
     end
-    if ((combo_size > 3) or is_chain) then
+    if ((combo_size > 2) or is_chain) then
       local stop_time
       if self.panels_in_top_row and is_chain then
         if self.level then
@@ -2742,7 +2742,7 @@ function Stack.check_matches(self)
       if self:shouldChangeSoundEffects() then
         if is_chain then
           self.combo_chain_play = {type = e_chain_or_combo.chain, size = self.chain_counter}
-        elseif combo_size > 3 then
+        elseif combo_size > 2 then
           self.combo_chain_play = {type = e_chain_or_combo.combo, size = combo_size}
         end
       end

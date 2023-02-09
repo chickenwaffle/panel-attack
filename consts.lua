@@ -186,7 +186,7 @@ level_to_metal_panel_cap       = { 21, 18, 18, 15, 15, 12,  9,  6,  6,  3, 3}
 -- vs hard cpu -> vs level 6 for all levels
 -- vs vhard cpu -> vs level 6 for all levels
 
-combo_garbage = {{}, {}, {}, {3}, {4},
+combo_garbage = {{}, {}, {2}, {3}, {4},
               {5}, {6}, {3,4}, {4,4}, {5,5},
               {5,6}, {6,6}, {6,6,6}, {6,6,6,6},
               [20]={6,6,6,6,6,6},
