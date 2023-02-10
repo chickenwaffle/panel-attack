@@ -2466,11 +2466,31 @@ function Stack.check_matches(self)
     for col = 1, self.width do
       if
         row ~= 1 and row ~= self.height and --check vertical match centered here.
-          (not (excludeMatchTable[row - 1][col] or excludeMatchTable[row][col] or excludeMatchTable[row + 1][col])) and
+          (not (excludeMatchTable[row - 1][col] or excludeMatchTable[row][col] or excludeMatchTable[row][col])) and
           panels[row][col].color == panels[row - 1][col].color and
+          panels[row][col].color == panels[row][col].color
+       then
+        for m_row = row - 1, row do
+          local panel = panels[m_row][col]
+          if not panel.matching then
+            combo_size = combo_size + 1
+            panel.matching = true
+          end
+          if panel.match_anyway and panel.chaining then
+            panel.chaining = nil
+            self.n_chain_panels = self.n_chain_panels - 1
+          end
+          is_chain = is_chain or panel.chaining
+        end
+        floodQueue:push({row, col, true, true})
+      end
+      if
+        row ~= 1 and row ~= self.height and --check vertical match centered here.
+          (not (excludeMatchTable[row][col] or excludeMatchTable[row][col] or excludeMatchTable[row + 1][col])) and
+          panels[row][col].color == panels[row][col].color and
           panels[row][col].color == panels[row + 1][col].color
        then
-        for m_row = row - 1, row + 1 do
+        for m_row = row, row + 1 do
           local panel = panels[m_row][col]
           if not panel.matching then
             combo_size = combo_size + 1
@@ -2486,11 +2506,31 @@ function Stack.check_matches(self)
       end
       if
         col ~= 1 and col ~= self.width and --check horiz match centered here.
-          (not (excludeMatchTable[row][col - 1] or excludeMatchTable[row][col] or excludeMatchTable[row][col + 1])) and
+          (not (excludeMatchTable[row][col - 1] or excludeMatchTable[row][col] or excludeMatchTable[row][col])) and
           panels[row][col].color == panels[row][col - 1].color and
+          panels[row][col].color == panels[row][col].color
+       then
+        for m_col = col - 1, col do
+          local panel = panels[row][m_col]
+          if not panel.matching then
+            combo_size = combo_size + 1
+            panel.matching = true
+          end
+          if panel.match_anyway and panel.chaining then
+            panel.chaining = nil
+            self.n_chain_panels = self.n_chain_panels - 1
+          end
+          is_chain = is_chain or panel.chaining
+        end
+        floodQueue:push({row, col, true, true})
+      end
+      if
+        col ~= 1 and col ~= self.width and --check horiz match centered here.
+          (not (excludeMatchTable[row][col] or excludeMatchTable[row][col] or excludeMatchTable[row][col + 1])) and
+          panels[row][col].color == panels[row][col].color and
           panels[row][col].color == panels[row][col + 1].color
        then
-        for m_col = col - 1, col + 1 do
+        for m_col = col, col + 1 do
           local panel = panels[row][m_col]
           if not panel.matching then
             combo_size = combo_size + 1
@@ -2652,7 +2692,7 @@ function Stack.check_matches(self)
       end
     end
     self.analytic:register_destroyed_panels(combo_size)
-    if (combo_size > 2) then
+    if (combo_size > 1) then
       if (score_mode == SCOREMODE_TA) then
         if (combo_size > 30) then
           combo_size = 30
@@ -2703,7 +2743,7 @@ function Stack.check_matches(self)
       end
       self.score = self.score + score_chain_TA[chain_bonus]
     end
-    if ((combo_size > 2) or is_chain) then
+    if ((combo_size > 1) or is_chain) then
       local stop_time
       if self.panels_in_top_row and is_chain then
         if self.level then
@@ -2742,7 +2782,7 @@ function Stack.check_matches(self)
       if self:shouldChangeSoundEffects() then
         if is_chain then
           self.combo_chain_play = {type = e_chain_or_combo.chain, size = self.chain_counter}
-        elseif combo_size > 2 then
+        elseif combo_size > 1 then
           self.combo_chain_play = {type = e_chain_or_combo.combo, size = combo_size}
         end
       end
