@@ -1,6 +1,7 @@
 json = require("dkjson")
 require("util")
 local consts = require("consts")
+require("Theme") -- needed for directory location
 
 -- Default configuration values
 config = {
@@ -35,6 +36,7 @@ config = {
     music_volume                  = 100,
     -- Debug mode flag
     debug_mode                    = false,
+    debugShowServers              = false,
     -- Show FPS in the top-left corner of the screen
     show_fps                      = false,
     -- Show ingame infos while playing the game
@@ -103,7 +105,7 @@ config = {
   
         -- do stuff using read_data.version for retrocompatibility here
   
-        if type(read_data.theme) == "string" and love.filesystem.getInfo("themes/" .. read_data.theme .. "/config.json") then
+        if type(read_data.theme) == "string" and love.filesystem.getInfo(Theme.themeDirectoryPath .. read_data.theme .. "/config.json") then
           configTable.theme = read_data.theme
         end
   
@@ -166,6 +168,9 @@ config = {
         end
         if type(read_data.debug_mode) == "boolean" then
           configTable.debug_mode = read_data.debug_mode
+        end
+        if type(read_data.debugShowServers) == "boolean" then
+          configTable.debugShowServers = read_data.debugShowServers
         end
         if type(read_data.show_fps) == "boolean" then
           configTable.show_fps = read_data.show_fps

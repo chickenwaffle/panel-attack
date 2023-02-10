@@ -11,8 +11,6 @@ local wait, resume = coroutine.yield, coroutine.resume
 
 local main_endless_select, main_timeattack_select, makeSelectPuzzleSetFunction, main_net_vs_setup, main_select_puzz, main_local_vs_setup, main_set_name, main_local_vs_yourself_setup, exit_game, training_setup
 
-local PLAYING = "playing" -- room states
-local CHARACTERSELECT = "character select" -- room states
 connection_up_time = 0 -- connection_up_time counts "E" messages, not seconds
 logged_in = 0
 GAME.connected_server_ip = nil -- the ip address of the server you are connected to
@@ -70,11 +68,17 @@ function fmainloop()
     -- Run all unit tests now that we have everything loaded
     GAME:drawLoadingString("Running Unit Tests")
     wait()
+    -- Small tests (unit tests)
     require("PuzzleTests")
     require("ServerQueueTests")
     require("StackTests")
+    require("tests.ThemeTests")
     require("table_util_tests")
     require("utilTests")
+    -- Medium level tests (integration tests)
+    require("tests.StackReplayTests")
+    require("tests.StackRollbackReplayTests")
+    -- Performance Tests
     if PERFORMANCE_TESTS_ENABLED then
       require("tests/performanceTests")
     end
@@ -145,6 +149,7 @@ function main_title()
     local lastTime = leftover_time
     wait()
     totalTime = totalTime + (leftover_time - lastTime)
+
     variable_step(
       function()
         if increment > 0 and percent >= 1 then
@@ -206,22 +211,18 @@ do
       {loc("mm_1_time"), main_timeattack_select},
       {loc("mm_1_vs"), main_local_vs_yourself_setup},
       {loc("mm_1_training"), training_setup},
-      --{loc("mm_2_vs_online", "burke.ro"), main_net_vs_setup, {"burke.ro"}},
-      --{loc("mm_2_vs_online", ""), main_net_vs_setup, {"18.188.43.50"}},
-      --{loc("mm_2_vs_online", "Shosoul's Server"), main_net_vs_setup, {"149.28.227.184"}},
       {loc("mm_2_vs_online", ""), main_net_vs_setup, {"betaserver.panelattack.com", 59569}},
-      --{loc("mm_2_vs_online", "(USE ONLY WITH OTHER CLIENTS ON THIS TEST BUILD 025beta)"), main_net_vs_setup, {"18.188.43.50"}},
-      --{loc("mm_2_vs_online", "This test build is for offline-use only"), main_select_mode},
-      --{loc("mm_2_vs_online", "domi1819.xyz"), main_net_vs_setup, {"domi1819.xyz"}},
-      --{loc("mm_2_vs_online", "(development-use only)"), main_net_vs_setup, {"localhost"}},
-      --{loc("mm_2_vs_online", "LittleEndu's server"), main_net_vs_setup, {"51.15.207.223"}},
-      --{loc("mm_2_vs_online", "server for ranked Ex Mode"), main_net_vs_setup, {"exserver.panelattack.com", 49568}},
       {loc("mm_2_vs_local"), main_local_vs_setup},
       {loc("mm_replay_browser"), replay_browser.main},
       {loc("mm_configure"), main_config_input},
       {loc("mm_set_name"), main_set_name},
       {loc("mm_options"), options.main}
     }
+
+    if config.debugShowServers then
+      table.insert(items, 7, {"Beta Server", main_net_vs_setup, {"betaserver.panelattack.com", 59569}})
+      table.insert(items, 8, {"Localhost Server", main_net_vs_setup, {"localhost"}})
+    end
 
     if TESTS_ENABLED then
       table.insert(items, 6, {"Vs Computer", main_local_vs_computer_setup})
@@ -261,6 +262,17 @@ do
         if has_game_update then
           menu_draw(panels[config.panels].images.classic[1][1], 1262, 685)
         end
+      end
+
+      local runningFromAutoUpdater = GAME_UPDATER_GAME_VERSION ~= nil
+      local autoUpdaterOutOfDate = (GAME_UPDATER_VERSION == nil or GAME_UPDATER_VERSION < 1.1)
+      if runningFromAutoUpdater and autoUpdaterOutOfDate then
+        local downloadLink = "panelattack.com/panel.zip"
+        if GAME_UPDATER.name == "panel-beta" then
+          downloadLink = "panelattack.com/panel-beta.zip"
+        end
+        gprintf(loc("auto_updater_version_warning") .. " " .. downloadLink, -5, infoYPosition, canvas_width, "right")
+        infoYPosition = infoYPosition - fontHeight
       end
 
       wait()
@@ -389,9 +401,49 @@ local function handle_pause(self)
   end
 end
 
-local function finalizeAndWriteReplay(extraPath, extraFilename)
+local function addReplayStatisticsToReplay(replay)
+  local r = replay[GAME.match.mode]
+  r.duration = GAME.match:gameEndedClockTime()
+  if GAME.match.mode == "vs" and P2 then
+    r.match_type = match_type
+    local p1GameResult = P1:gameResult()
+    if p1GameResult == 1 then
+      r.winner = P1.which
+    elseif p1GameResult == -1 then
+      r.winner = P2.which
+    elseif p1GameResult == 0 then
+      r.winner = 0
+    end
+  end
+  r.playerStats = {}
+  
+  if P1 then
+    r.playerStats[P1.which] = {}
+    r.playerStats[P1.which].number = P1.which
+    r.playerStats[P1.which] = P1.analytic.data
+    r.playerStats[P1.which].score = P1.score
+    if GAME.match.mode == "vs" and GAME.match.room_ratings then
+      r.playerStats[P1.which].rating = GAME.match.room_ratings[P1.which]
+    end
+  end
 
+  if P2 then
+    r.playerStats[P2.which] = {}
+    r.playerStats[P2.which].number = P2.which
+    r.playerStats[P2.which] = P2.analytic.data
+    r.playerStats[P2.which].score = P2.score
+    if GAME.match.mode == "vs" and GAME.match.room_ratings then
+      r.playerStats[P2.which].rating = GAME.match.room_ratings[P2.which]
+    end
+  end
+
+  return replay
+end
+
+local function finalizeAndWriteReplay(extraPath, extraFilename)
+  replay = addReplayStatisticsToReplay(replay)
   replay[GAME.match.mode].in_buf = table.concat(P1.confirmedInput)
+  replay[GAME.match.mode].stage = current_stage
 
   local now = os.date("*t", to_UTC(os.time()))
   local sep = "/"
@@ -403,7 +455,7 @@ local function finalizeAndWriteReplay(extraPath, extraFilename)
   if extraFilename then
     filename = filename .. "-" .. extraFilename
   end
-  filename = filename .. ".txt"
+  filename = filename .. ".json"
   logger.debug("saving replay as " .. path .. sep .. filename)
   write_replay_file(path, filename)
 end
@@ -458,7 +510,7 @@ local function runMainGameLoop(updateFunction, variableStepFunction, abortGameFu
 
     -- Render only if we are not catching up to a current spectate match
     if not (P1 and P1.play_to_end) and not (P2 and P2.play_to_end) then
-      GAME.match:render()
+      gfx_q:push({Match.render, {GAME.match}})
       wait()
     end
 
@@ -1559,7 +1611,7 @@ function main_local_vs_yourself()
       0, -- timemax
       nil, -- winnerSFX
       false, -- keepMusic
-      {select_screen, "1p_vs_yourself"} -- args
+      {select_screen, "1p_vs_yourself"} -- args:
     }}
   end
   
@@ -1997,7 +2049,7 @@ function game_over_transition(next_func, text, winnerSFX, timemax, keepMusic, ar
   end
 
   while true do
-    GAME.match:render()
+    gfx_q:push({Match.render, {GAME.match}})
     gprint(text, (canvas_width - font:getWidth(text)) / 2, 10)
     gprint(button_text, (canvas_width - font:getWidth(button_text)) / 2, 10 + 30)
     wait()

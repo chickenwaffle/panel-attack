@@ -401,7 +401,7 @@ local function audio_menu(button_idx)
 
         -- disable the menu_validate sound and keep a copy of it to restore later
         local menu_validate_sound = themes[config.theme].sounds.menu_validate
-        themes[config.theme].sounds.menu_validate = zero_sound
+        themes[config.theme].sounds.menu_validate = themes[config.theme].zero_sound
 
         gprint(loc("op_music_load"), unpack(themes[config.theme].main_menu_screen_pos))
         wait()
@@ -886,6 +886,13 @@ local function debug_menu(button_idx)
     updateVsFramesBehind()
   end
 
+  local function update_debugServers(noToggle)
+    if not noToggle then
+      config.debugShowServers = not config.debugShowServers
+    end
+    debugMenu:set_button_setting(3, config.debugShowServers and loc("op_on") or loc("op_off"))
+  end
+
   local function nextMenu()
     debugMenu:selectNextIndex()
   end
@@ -901,9 +908,11 @@ local function debug_menu(button_idx)
   debugMenu = Click_menu(menu_x, menu_y, nil, themes[config.theme].main_menu_max_height, 1)
   debugMenu:add_button(loc("op_debug"), update_debug, goEscape, update_debug, update_debug)
   debugMenu:add_button("VS Frames Behind", nextMenu, goEscape, decreaseVsFramesBehind, increaseVsFramesBehind)
+  debugMenu:add_button("Show Debug Servers", update_debugServers, goEscape, update_debugServers, update_debugServers)
   debugMenu:add_button(loc("back"), exitSettings, exitSettings)
   update_debug(true)
   updateVsFramesBehind()
+  update_debugServers(true)
 
   if button_idx then
     debugMenu:set_active_idx(button_idx)
@@ -964,11 +973,11 @@ local function about_menu(button_idx)
   end
 
   local function show_themes_readme()
-    if not love.filesystem.getInfo("themes/" .. prefix_of_ignored_dirs .. consts.DEFAULT_THEME_DIRECTORY) then
+    if not love.filesystem.getInfo(Theme.themeDirectoryPath .. prefix_of_ignored_dirs .. consts.DEFAULT_THEME_DIRECTORY) then
       --print("Hold on. Copying example folders to make this easier...\n This make take a few seconds.")
       gprint(loc("op_copy_files"), 280, 280)
       wait()
-      recursive_copy("themes/" .. consts.DEFAULT_THEME_DIRECTORY, "themes/" .. prefix_of_ignored_dirs .. consts.DEFAULT_THEME_DIRECTORY)
+      recursive_copy(Theme.themeDirectoryPath .. consts.DEFAULT_THEME_DIRECTORY, Theme.themeDirectoryPath .. prefix_of_ignored_dirs .. consts.DEFAULT_THEME_DIRECTORY)
 
       -- Android can't easily copy into the save dir, so do it for them to help.
       recursive_copy("default_data/themes", "themes")
@@ -1195,7 +1204,7 @@ function options.main(button_idx)
   else
     found_themes = {}
     for _, v in ipairs(FileUtil.getFilteredDirectoryItems("themes")) do
-      if love.filesystem.getInfo("themes/" .. v) and love.filesystem.getInfo("themes/" .. v .. "/config.json") then
+      if love.filesystem.getInfo(Theme.themeDirectoryPath .. v) and love.filesystem.getInfo(Theme.themeDirectoryPath .. v .. "/config.json") then
         found_themes[#found_themes + 1] = v
         if config.theme == v then
           theme_index = #found_themes
