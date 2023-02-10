@@ -35,6 +35,7 @@ function Stage.json_init(self)
   local config_file, err = love.filesystem.newFile(self.path .. "/config.json", "r")
   if config_file then
     local teh_json = config_file:read(config_file:getSize())
+    config_file:close()
     for k, v in pairs(json.decode(teh_json)) do
       read_data[k] = v
     end
@@ -68,16 +69,6 @@ function Stage.json_init(self)
   end
 
   return false
-end
-
--- stops stage sounds
-function Stage.stop_sounds(self)
-  -- music
-  for _, music in ipairs(self.musics) do
-    if self.musics[music] then
-      self.musics[music]:stop()
-    end
-  end
 end
 
 -- preemptively loads a stage
@@ -184,8 +175,8 @@ function stages_init()
     fill_stages_ids()
   end
 
-  if love.filesystem.getInfo("themes/" .. config.theme .. "/stages.txt") then
-    for line in love.filesystem.lines("themes/" .. config.theme .. "/stages.txt") do
+  if love.filesystem.getInfo(Theme.themeDirectoryPath .. config.theme .. "/stages.txt") then
+    for line in love.filesystem.lines(Theme.themeDirectoryPath .. config.theme .. "/stages.txt") do
       line = trim(line) -- remove whitespace
       -- found at least a valid stage in a stages.txt file
       if stages[line] then
@@ -285,7 +276,7 @@ function Stage.sound_init(self, full, yields)
         self.musics[music]:setLooping(false)
       end
     elseif not self.musics[music] and defaulted_musics[music] then
-      self.musics[music] = default_stage.musics[music] or zero_sound
+      self.musics[music] = default_stage.musics[music] or themes[config.theme].zero_sound
     end
 
     if yields then

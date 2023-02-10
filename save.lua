@@ -22,8 +22,8 @@ function read_key_file()
       local file = love.filesystem.newFile("keysV2.txt")
       file:open("r")
       local teh_json = file:read(file:getSize())
-      local user_conf = json.decode(teh_json)
       file:close()
+      local user_conf = json.decode(teh_json)
       for k, v in ipairs(user_conf) do
         inputConfigs[k] = v
       end
@@ -110,8 +110,8 @@ function read_user_id_file()
       local file = love.filesystem.newFile("servers/" .. GAME.connected_server_ip .. "/user_id.txt")
       file:open("r")
       my_user_id = file:read()
-      my_user_id = my_user_id:match("^%s*(.-)%s*$")
       file:close()
+      my_user_id = my_user_id:match("^%s*(.-)%s*$")
     end
   )
 end
@@ -156,6 +156,7 @@ function read_puzzles()
           local file = love.filesystem.newFile("puzzles/" .. filename)
           file:open("r")
           local teh_json = file:read(file:getSize())
+          file:close()
           local current_json = json.decode(teh_json) or {}
           if current_json["Version"] == 2 then
             for _, puzzleSet in pairs(current_json["Puzzle Sets"]) do
@@ -203,6 +204,7 @@ function read_attack_files(path)
           local file = love.filesystem.newFile(current_path)
           file:open("r")
           local teh_json = file:read(file:getSize())
+          file:close()
           local training_conf = {}
           for k, w in pairs(json.decode(teh_json)) do
             training_conf[k] = w
@@ -211,7 +213,6 @@ function read_attack_files(path)
             training_conf.name = v
           end
           trainings[#trainings+1] = training_conf
-          file:close()
         end
       end
     end
@@ -221,73 +222,5 @@ end
 function print_list(t)
   for i, v in ipairs(t) do
     print(v)
-  end
-end
-
--- copies a file from the given source to the given destination
-function copy_file(source, destination)
-  local lfs = love.filesystem
-  local source_file = lfs.newFile(source)
-  source_file:open("r")
-  local source_size = source_file:getSize()
-  temp = source_file:read(source_size)
-  source_file:close()
-
-  local new_file = lfs.newFile(destination)
-  new_file:open("w")
-  local success, message = new_file:write(temp, source_size)
-  new_file:close()
-end
-
--- copies a file from the given source to the given destination
-function recursive_copy(source, destination)
-  local lfs = love.filesystem
-  local names = lfs.getDirectoryItems(source)
-  local temp
-  for i, name in ipairs(names) do
-    local info = lfs.getInfo(source .. "/" .. name)
-    if info and info.type == "directory" then
-      logger.trace("calling recursive_copy(source" .. "/" .. name .. ", " .. destination .. "/" .. name .. ")")
-      recursive_copy(source .. "/" .. name, destination .. "/" .. name)
-    elseif info and info.type == "file" then
-      local destination_info = lfs.getInfo(destination)
-      if not destination_info or destination_info.type ~= "directory" then
-        love.filesystem.createDirectory(destination)
-      end
-      logger.trace("copying file:  " .. source .. "/" .. name .. " to " .. destination .. "/" .. name)
-
-      local source_file = lfs.newFile(source .. "/" .. name)
-      source_file:open("r")
-      local source_size = source_file:getSize()
-      temp = source_file:read(source_size)
-      source_file:close()
-
-      local new_file = lfs.newFile(destination .. "/" .. name)
-      new_file:open("w")
-      local success, message = new_file:write(temp, source_size)
-      new_file:close()
-
-      if not success then
-        logger.warn(message)
-      end
-    else
-      logger.warn("name:  " .. name .. " isn't a directory or file?")
-    end
-  end
-end
--- Deletes any file matching the target name from the file tree recursively
-function recursiveRemoveFiles(folder, targetName)
-  local lfs = love.filesystem
-  local filesTable = lfs.getDirectoryItems(folder)
-  for _, fileName in ipairs(filesTable) do
-    local file = folder .. "/" .. fileName
-    local info = lfs.getInfo(file)
-    if info then
-      if info.type == "directory" then
-        recursiveRemoveFiles(file, targetName)
-      elseif info.type == "file" and fileName == targetName then
-        love.filesystem.remove(file)
-      end
-    end
   end
 end
