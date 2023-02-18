@@ -549,7 +549,7 @@ function Stack.render(self)
 
   local function drawTimer()
     -- Draw the timer for time attack
-    if self.match.mode == "time" then
+    if self.match.mode == "time" or self.match.mode == "2ptime" then
       local time_left = time_attack_time - ((self.game_stopwatch or (time_attack_time * 60)) / 60) -- time left in seconds
       if time_left < 0 then
         time_left = 0

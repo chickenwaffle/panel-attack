@@ -1789,7 +1789,7 @@ function Stack.simulate(self)
       end
     end
 
-    if (self.score > 99999) then
+    if self.match.mode ~= "2ptime" and self.score > 99999 then
       self.score = 99999
     -- lol owned
     end
@@ -2163,7 +2163,7 @@ function Stack.game_ended(self)
     if gameEndedClockTime > 0 and self.CLOCK > gameEndedClockTime then
       return true
     end
-  elseif self.match.mode == "time" then
+  elseif self.match.mode == "time" or self.match.mode == "2ptime" then
     if gameEndedClockTime > 0 and self.CLOCK > gameEndedClockTime then
       return true
     elseif self.game_stopwatch then
@@ -2192,13 +2192,20 @@ function Stack.gameResult(self)
 
   local gameEndedClockTime = self.match:gameEndedClockTime()
 
-  if self.match.mode == "vs" then
+  if self.match.mode == "vs" or self.match.mode == "2ptime" then
     local otherPlayer = self.garbage_target
     if otherPlayer == self or otherPlayer == nil then
       return -1
     -- We can't call it until someone has lost and everyone has played up to that point in time.
     elseif otherPlayer:game_ended() then
       if self.game_over_clock == gameEndedClockTime and otherPlayer.game_over_clock == gameEndedClockTime then
+        if self.match.mode == "2ptime" then
+          if P1.score > P2.score then
+            return 1
+          elseif P1.score < P2.score then
+            return -1
+          end
+        end
         return 0
       elseif self.game_over_clock == gameEndedClockTime then
         return -1

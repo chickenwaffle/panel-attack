@@ -222,6 +222,7 @@ end
 
 function select_screen.isNetPlay(self)
   return select_screen.character_select_mode == "2p_net_vs"
+  or select_screen.character_select_mode == "2p_net_time_attack"
 end
 
 function select_screen.isMultiplayer(self)
@@ -705,7 +706,7 @@ function select_screen.handleServerMessages(self)
     end
 
     if (msg.match_start or replay_of_match_so_far) and msg.player_settings and msg.opponent_settings then
-      return self:startNetPlayMatch(msg)
+      return self:startNetPlayMatch(msg, "2ptime")
     end
   end
 
@@ -770,7 +771,7 @@ function select_screen.getSeed(self, msg)
   return seed
 end
 
-function select_screen.startNetPlayMatch(self, msg)
+function select_screen.startNetPlayMatch(self, msg, game_type)
   logger.debug("spectating: " .. tostring(GAME.battleRoom.spectating))
   refreshBasedOnOwnMods(msg.opponent_settings)
   refreshBasedOnOwnMods(msg.player_settings)
@@ -779,10 +780,10 @@ function select_screen.startNetPlayMatch(self, msg)
   current_stage = msg.stage
   character_loader_wait()
   stage_loader_wait()
-  GAME.match = Match("vs", GAME.battleRoom)
+  GAME.match = Match(game_type, GAME.battleRoom)
 
   GAME.match.seed = self:getSeed(msg)
-  if match_type == "Ranked" then
+  if game_type == "vs" and match_type == "Ranked" then
     GAME.match.room_ratings = self.currentRoomRatings
     GAME.match.my_player_number = self.my_player_number
     GAME.match.op_player_number = self.op_player_number
@@ -831,8 +832,8 @@ function select_screen.startNetPlayMatch(self, msg)
 end
 
 -- returns transition to local vs screen
-function select_screen.start2pLocalMatch(self)
-  GAME.match = Match("vs", GAME.battleRoom)
+function select_screen.start2pLocalMatch(self, game_type)
+  GAME.match = Match(game_type, GAME.battleRoom)
   P1 = Stack{which = 1, match = GAME.match, is_local = true, panels_dir = self.players[self.my_player_number].panels_dir, level = self.players[self.my_player_number].level, character = self.players[self.my_player_number].character, player_number = 1}
   GAME.match.P1 = P1
   P2 = Stack{which = 2, match = GAME.match, is_local = true, panels_dir = self.players[self.op_player_number].panels_dir, level = self.players[self.op_player_number].level, character = self.players[self.op_player_number].character, player_number = 2}
@@ -1015,7 +1016,9 @@ function select_screen.main(self, character_select_mode, roomInitializationMessa
       return self:start1pLocalMatch()
     -- Handle two player vs game setup
     elseif select_screen.character_select_mode == "2p_local_vs" and self.players[self.my_player_number].ready and self.players[self.op_player_number].ready then
-      return self:start2pLocalMatch()
+      return self:start2pLocalMatch("vs")
+    elseif select_screen.character_select_mode == "2p_local_time_attack" and self.players[self.my_player_number].ready and self.players[self.op_player_number].ready then
+      return self:start2pLocalMatch("2ptime")
     elseif select_screen.character_select_mode == "2p_local_computer_vs" and self.players[self.my_player_number].ready then
       return self:start1pCpuMatch()
     -- Fetch the next network messages for 2p vs. When we get a start message we will transition there.

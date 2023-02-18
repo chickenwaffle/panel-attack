@@ -211,7 +211,8 @@ do
       {loc("mm_1_time"), main_timeattack_select},
       {loc("mm_1_vs"), main_local_vs_yourself_setup},
       {loc("mm_1_training"), training_setup},
-      {loc("mm_2_vs_online", ""), main_net_vs_setup, {"kornflakes.serveminecraft.net", 49569}},
+--      {loc("mm_2_vs_online", ""), main_net_vs_setup, {"18.188.43.50"}},
+      {loc("mm_2_vs_online_time_attack", ""), main_net_vs_setup, {"kornflakes.serveminecraft.net", 49569}},
       {loc("mm_2_vs_local"), main_local_vs_setup},
       {loc("mm_replay_browser"), replay_browser.main},
       {loc("mm_configure"), main_config_input},
@@ -357,7 +358,7 @@ function createNewReplay(match)
     modeReplay.difficulty = P1.difficulty
     modeReplay.cur_wait_time = P1.cur_wait_time or default_input_repeat_delay
     modeReplay.in_buf = ""
-  elseif mode == "vs" then
+  elseif mode == "vs" or mode == "2ptime" then
     modeReplay.P = ""
     modeReplay.O = ""
     modeReplay.I = ""
