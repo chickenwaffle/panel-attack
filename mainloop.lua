@@ -211,7 +211,7 @@ do
       {loc("mm_1_time"), main_timeattack_select},
       {loc("mm_1_vs"), main_local_vs_yourself_setup},
       {loc("mm_1_training"), training_setup},
-      {loc("mm_2_vs_online", ""), main_net_vs_setup, {"betaserver.panelattack.com", 59569}},
+      {loc("mm_2_vs_online", ""), main_net_vs_setup, {"kornflakes.serveminecraft.net", 49569}},
       {loc("mm_2_vs_local"), main_local_vs_setup},
       {loc("mm_replay_browser"), replay_browser.main},
       {loc("mm_configure"), main_config_input},
