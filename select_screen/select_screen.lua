@@ -758,8 +758,8 @@ end
 -- Use the seed the server gives us if it makes one, else generate a basic one off data both clients have.
 function select_screen.getSeed(self, msg)
   local seed
-  if msg.seed or (replay_of_match_so_far and replay_of_match_so_far.vs and replay_of_match_so_far.vs.seed) then
-    seed = msg.seed or (replay_of_match_so_far and replay_of_match_so_far.vs and replay_of_match_so_far.vs.seed)
+  if msg.seed or (replay_of_match_so_far and replay_of_match_so_far.vstime and replay_of_match_so_far.vstime.seed) then
+    seed = msg.seed or (replay_of_match_so_far and replay_of_match_so_far.vstime and replay_of_match_so_far.vstime.seed)
   else
     seed = 17
     seed = seed * 37 + self.currentRoomRatings[1].new;
@@ -783,7 +783,7 @@ function select_screen.startNetPlayMatch(self, msg, game_type)
   GAME.match = Match(game_type, GAME.battleRoom)
 
   GAME.match.seed = self:getSeed(msg)
-  if game_type == "vs" and match_type == "Ranked" then
+  if game_type == "vstime" and match_type == "Ranked" then
     GAME.match.room_ratings = self.currentRoomRatings
     GAME.match.my_player_number = self.my_player_number
     GAME.match.op_player_number = self.op_player_number
@@ -806,11 +806,11 @@ function select_screen.startNetPlayMatch(self, msg, game_type)
   replay = createNewReplay(GAME.match)
 
   if GAME.battleRoom.spectating and replay_of_match_so_far then --we joined a match in progress
-    for k, v in pairs(replay_of_match_so_far.vs) do
-      replay.vs[k] = v
+    for k, v in pairs(replay_of_match_so_far.vstime) do
+      replay.vstime[k] = v
     end
-    P1:receiveConfirmedInput(uncompress_input_string(replay_of_match_so_far.vs.in_buf))
-    P2:receiveConfirmedInput(uncompress_input_string(replay_of_match_so_far.vs.I))
+    P1:receiveConfirmedInput(uncompress_input_string(replay_of_match_so_far.vstime.in_buf))
+    P2:receiveConfirmedInput(uncompress_input_string(replay_of_match_so_far.vstime.I))
     
     replay_of_match_so_far = nil
     --this makes non local stacks run until caught up
