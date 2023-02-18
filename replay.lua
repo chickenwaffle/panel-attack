@@ -28,11 +28,7 @@ end
 function Replay.loadFromFile(replay)
   assert(replay ~= nil)
   local replayDetails
-  if replay.vs then
-    GAME.battleRoom = BattleRoom()
-    GAME.match = Match("vs", GAME.battleRoom)
-    replayDetails = replay.vs
-  elseif replay.vstime then
+  if replay.vstime then
     GAME.battleRoom = BattleRoom()
     GAME.match = Match("vstime", GAME.battleRoom)
     replayDetails = replay.vstime
@@ -49,7 +45,7 @@ function Replay.loadFromFile(replay)
   GAME.match.seed = replayDetails.seed
   GAME.match.isFromReplay = true
 
-  if replay.vs then
+  if replay.vstime then
     assert(replayDetails.P1_level, "invalid replay: player 1 level missing from vs replay")
     P1 = Stack{which=1, match=GAME.match, is_local=false, level=replayDetails.P1_level, character=replayDetails.P1_char}
 

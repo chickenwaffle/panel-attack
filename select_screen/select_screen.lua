@@ -806,11 +806,11 @@ function select_screen.startNetPlayMatch(self, msg, game_type)
   replay = createNewReplay(GAME.match)
 
   if GAME.battleRoom.spectating and replay_of_match_so_far then --we joined a match in progress
-    for k, v in pairs(replay_of_match_so_far.vstime) do
+    for k, v in pairs(replay_of_match_so_far.vs) do
       replay.vstime[k] = v
     end
-    P1:receiveConfirmedInput(uncompress_input_string(replay_of_match_so_far.vstime.in_buf))
-    P2:receiveConfirmedInput(uncompress_input_string(replay_of_match_so_far.vstime.I))
+    P1:receiveConfirmedInput(uncompress_input_string(replay.vstime.in_buf))
+    P2:receiveConfirmedInput(uncompress_input_string(replay.vstime.I))
     
     replay_of_match_so_far = nil
     --this makes non local stacks run until caught up

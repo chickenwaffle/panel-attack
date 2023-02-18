@@ -188,10 +188,10 @@ function Connection.I(self, message)
     end
     if self.player_number == 1 and self.room then
       self.room:send_to_spectators("U" .. message)
-      self.room.replay.vs.in_buf = self.room.replay.vs.in_buf .. message
+      self.room.replay.vstime.in_buf = self.room.replay.vstime.in_buf .. message
     elseif self.player_number == 2 and self.room then
       self.room:send_to_spectators("I" .. message)
-      self.room.replay.vs.I = self.room.replay.vs.I .. message
+      self.room.replay.vstime.I = self.room.replay.vstime.I .. message
     end
   end
 end
@@ -215,10 +215,10 @@ function Connection.P(self, message)
   self:send("P" .. ret)
   if self.player_number == 1 then
     self.room:send_to_spectators("P" .. ret)
-    self.room.replay.vs.P = self.room.replay.vs.P .. ret
+    self.room.replay.vstime.P = self.room.replay.vstime.P .. ret
   elseif self.player_number == 2 then
     self.room:send_to_spectators("O" .. ret)
-    self.room.replay.vs.O = self.room.replay.vs.O .. ret
+    self.room.replay.vstime.O = self.room.replay.vstime.O .. ret
   end
   if self.opponent then
     self.opponent:send("O" .. ret)
@@ -235,10 +235,10 @@ function Connection.Q(self, message)
   self:send("Q" .. ret)
   if self.player_number == 1 then
     self.room:send_to_spectators("Q" .. ret)
-    self.room.replay.vs.Q = self.room.replay.vs.Q .. ret
+    self.room.replay.vstime.Q = self.room.replay.vstime.Q .. ret
   elseif self.player_number == 2 then
     self.room:send_to_spectators("R" .. ret)
-    self.room.replay.vs.R = self.room.replay.vs.R .. ret
+    self.room.replay.vstime.R = self.room.replay.vstime.R .. ret
   end
   if self.opponent then
     self.opponent:send("R" .. ret)
@@ -364,7 +364,7 @@ function Connection.J(self, message)
 
     if self.ready and self.opponent.ready then
       self.room.replay = {}
-      self.room.replay.vs = {
+      self.room.replay.vstime = {
         P = "",
         O = "",
         I = "",
