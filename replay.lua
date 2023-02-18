@@ -32,12 +32,10 @@ function Replay.loadFromFile(replay)
     GAME.battleRoom = BattleRoom()
     GAME.match = Match("vs", GAME.battleRoom)
     replayDetails = replay.vs
-  --[[
-    elseif replay.2ptime then
+  elseif replay.vstime then
     GAME.battleRoom = BattleRoom()
-    GAME.match = Match("2ptime", GAME.battleRoom)
-    replayDetails = replay.2ptime
-  ]]--
+    GAME.match = Match("vstime", GAME.battleRoom)
+    replayDetails = replay.vstime
   elseif replay.endless or replay.time then
     if replay.time then
       GAME.match = Match("time")

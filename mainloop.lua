@@ -358,7 +358,7 @@ function createNewReplay(match)
     modeReplay.difficulty = P1.difficulty
     modeReplay.cur_wait_time = P1.cur_wait_time or default_input_repeat_delay
     modeReplay.in_buf = ""
-  elseif mode == "vs" or mode == "2ptime" then
+  elseif mode == "vs" or mode == "vstime" then
     modeReplay.P = ""
     modeReplay.O = ""
     modeReplay.I = ""

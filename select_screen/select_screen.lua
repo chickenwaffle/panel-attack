@@ -706,7 +706,7 @@ function select_screen.handleServerMessages(self)
     end
 
     if (msg.match_start or replay_of_match_so_far) and msg.player_settings and msg.opponent_settings then
-      return self:startNetPlayMatch(msg, "2ptime")
+      return self:startNetPlayMatch(msg, "vstime")
     end
   end
 
@@ -1018,7 +1018,7 @@ function select_screen.main(self, character_select_mode, roomInitializationMessa
     elseif select_screen.character_select_mode == "2p_local_vs" and self.players[self.my_player_number].ready and self.players[self.op_player_number].ready then
       return self:start2pLocalMatch("vs")
     elseif select_screen.character_select_mode == "2p_local_time_attack" and self.players[self.my_player_number].ready and self.players[self.op_player_number].ready then
-      return self:start2pLocalMatch("2ptime")
+      return self:start2pLocalMatch("vstime")
     elseif select_screen.character_select_mode == "2p_local_computer_vs" and self.players[self.my_player_number].ready then
       return self:start1pCpuMatch()
     -- Fetch the next network messages for 2p vs. When we get a start message we will transition there.
