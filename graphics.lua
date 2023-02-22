@@ -919,6 +919,7 @@ function Stack.render(self)
     local xCombo = x + column2Distance
     for i, combo_amount in pairs(comboData) do
       if combo_amount and combo_amount > 0 then
+        --TODO: Do not draw +4 combo card in analytics
         icon_width, icon_height = themes[config.theme].images.IMG_cards[false][i]:getDimensions()
         draw(themes[config.theme].images.IMG_cards[false][i], xCombo / GFX_SCALE, yCombo / GFX_SCALE, 0, iconSize / icon_width, iconSize / icon_height)
         gprintf(combo_amount, xCombo + iconToTextSpacing, yCombo + 0, canvas_width, "left", nil, 1, fontIncrement)
