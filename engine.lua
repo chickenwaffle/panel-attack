@@ -214,10 +214,12 @@ Stack =
 
     s.analytic = AnalyticsInstance(s.is_local)
 
+    --[[
     if s.match.mode == "vs" then
       s.telegraph = Telegraph(s, s) -- Telegraph holds the garbage that hasn't been committed yet and also tracks the attack animations
       -- NOTE: this is the telegraph above this stack, so the opponents puts garbage in this stack.
     end
+    ]]
 
     s.combos = {} -- Tracks the combos made throughout the whole game. Key is the clock time, value is the combo size
     s.chains = {} -- Tracks the chains made throughout the whole game
