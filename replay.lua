@@ -19,7 +19,7 @@ function Replay.loadFromPath(path)
     replay = {}
     replay = json.decode(file)
     if not replay.engineVersion then
-        replay.engineVersion = "046"
+        replay.engineVersion = "069"
     end
 
     return true
@@ -28,10 +28,10 @@ end
 function Replay.loadFromFile(replay)
   assert(replay ~= nil)
   local replayDetails
-  if replay.vstime then
+  if replay.vs then
     GAME.battleRoom = BattleRoom()
-    GAME.match = Match("vstime", GAME.battleRoom)
-    replayDetails = replay.vstime
+    GAME.match = Match("vs", GAME.battleRoom)
+    replayDetails = replay.vs
   elseif replay.endless or replay.time then
     if replay.time then
       GAME.match = Match("time")
@@ -45,7 +45,7 @@ function Replay.loadFromFile(replay)
   GAME.match.seed = replayDetails.seed
   GAME.match.isFromReplay = true
 
-  if replay.vstime then
+  if replay.vs then
     assert(replayDetails.P1_level, "invalid replay: player 1 level missing from vs replay")
     P1 = Stack{which=1, match=GAME.match, is_local=false, level=replayDetails.P1_level, character=replayDetails.P1_char}
 

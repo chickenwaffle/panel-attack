@@ -706,7 +706,7 @@ function select_screen.handleServerMessages(self)
     end
 
     if (msg.match_start or replay_of_match_so_far) and msg.player_settings and msg.opponent_settings then
-      return self:startNetPlayMatch(msg, "vstime")
+      return self:startNetPlayMatch(msg, "vs")
     end
   end
 
@@ -758,8 +758,8 @@ end
 -- Use the seed the server gives us if it makes one, else generate a basic one off data both clients have.
 function select_screen.getSeed(self, msg)
   local seed
-  if msg.seed or (replay_of_match_so_far and replay_of_match_so_far.vstime and replay_of_match_so_far.vstime.seed) then
-    seed = msg.seed or (replay_of_match_so_far and replay_of_match_so_far.vstime and replay_of_match_so_far.vstime.seed)
+  if msg.seed or (replay_of_match_so_far and replay_of_match_so_far.vs and replay_of_match_so_far.vs.seed) then
+    seed = msg.seed or (replay_of_match_so_far and replay_of_match_so_far.vs and replay_of_match_so_far.vs.seed)
   else
     seed = 17
     seed = seed * 37 + self.currentRoomRatings[1].new;
@@ -783,7 +783,7 @@ function select_screen.startNetPlayMatch(self, msg, game_type)
   GAME.match = Match(game_type, GAME.battleRoom)
 
   GAME.match.seed = self:getSeed(msg)
-  if game_type == "vstime" and match_type == "Ranked" then
+  if game_type == "vs" and match_type == "Ranked" then
     GAME.match.room_ratings = self.currentRoomRatings
     GAME.match.my_player_number = self.my_player_number
     GAME.match.op_player_number = self.op_player_number
@@ -807,10 +807,10 @@ function select_screen.startNetPlayMatch(self, msg, game_type)
 
   if GAME.battleRoom.spectating and replay_of_match_so_far then --we joined a match in progress
     for k, v in pairs(replay_of_match_so_far.vs) do
-      replay.vstime[k] = v
+      replay.vs[k] = v
     end
-    P1:receiveConfirmedInput(uncompress_input_string(replay.vstime.in_buf))
-    P2:receiveConfirmedInput(uncompress_input_string(replay.vstime.I))
+    P1:receiveConfirmedInput(uncompress_input_string(replay.vs.in_buf))
+    P2:receiveConfirmedInput(uncompress_input_string(replay.vs.I))
     
     replay_of_match_so_far = nil
     --this makes non local stacks run until caught up
@@ -1015,10 +1015,8 @@ function select_screen.main(self, character_select_mode, roomInitializationMessa
     if self.players[self.my_player_number].ready and self.character_select_mode == "1p_vs_yourself" then
       return self:start1pLocalMatch()
     -- Handle two player vs game setup
-    elseif select_screen.character_select_mode == "2p_local_vs" and self.players[self.my_player_number].ready and self.players[self.op_player_number].ready then
-      return self:start2pLocalMatch("vs")
     elseif select_screen.character_select_mode == "2p_local_time_attack" and self.players[self.my_player_number].ready and self.players[self.op_player_number].ready then
-      return self:start2pLocalMatch("vstime")
+      return self:start2pLocalMatch("vs")
     elseif select_screen.character_select_mode == "2p_local_computer_vs" and self.players[self.my_player_number].ready then
       return self:start1pCpuMatch()
     -- Fetch the next network messages for 2p vs. When we get a start message we will transition there.

@@ -137,10 +137,10 @@ function replay_browser.main()
       gprint(loc("rp_browser_info_header"), replay_browser.menu_x + 170, replay_browser.menu_y - 40)
       gprint(replay_browser.filename, replay_browser.menu_x - 150, replay_browser.menu_y - 40 + replay_browser.menu_h)
 
-      if replay.vstime then
+      if replay.vs then
         -- This used to be calculated based on the length of "O", but that no longer always exists.
         -- "I" will always exist for two player vs
-        local twoPlayerVs = replay.vstime.I and string.len(replay.vstime.I) > 0
+        local twoPlayerVs = replay.vs.I and string.len(replay.vs.I) > 0
         local modeText
         if twoPlayerVs then
           modeText = loc("rp_browser_info_2p_vs")
@@ -151,17 +151,17 @@ function replay_browser.main()
         gprint(modeText, replay_browser.menu_x + 220, replay_browser.menu_y + 20)
 
         gprint(loc("rp_browser_info_1p"), replay_browser.menu_x, replay_browser.menu_y + 50)
-        gprint(loc("rp_browser_info_name", replay.vstime.P1_name), replay_browser.menu_x, replay_browser.menu_y + 65)
-        gprint(loc("rp_browser_info_level", replay.vstime.P1_level), replay_browser.menu_x, replay_browser.menu_y + 80)
-        gprint(loc("rp_browser_info_character", replay.vstime.P1_char), replay_browser.menu_x, replay_browser.menu_y + 95)
+        gprint(loc("rp_browser_info_name", replay.vs.P1_name), replay_browser.menu_x, replay_browser.menu_y + 65)
+        gprint(loc("rp_browser_info_level", replay.vs.P1_level), replay_browser.menu_x, replay_browser.menu_y + 80)
+        gprint(loc("rp_browser_info_character", replay.vs.P1_char), replay_browser.menu_x, replay_browser.menu_y + 95)
 
         if twoPlayerVs then
           gprint(loc("rp_browser_info_2p"), replay_browser.menu_x + 300, replay_browser.menu_y + 50)
-          gprint(loc("rp_browser_info_name", replay.vstime.P2_name), replay_browser.menu_x + 300, replay_browser.menu_y + 65)
-          gprint(loc("rp_browser_info_level", replay.vstime.P2_level), replay_browser.menu_x + 300, replay_browser.menu_y + 80)
-          gprint(loc("rp_browser_info_character", replay.vstime.P2_char), replay_browser.menu_x + 300, replay_browser.menu_y + 95)
+          gprint(loc("rp_browser_info_name", replay.vs.P2_name), replay_browser.menu_x + 300, replay_browser.menu_y + 65)
+          gprint(loc("rp_browser_info_level", replay.vs.P2_level), replay_browser.menu_x + 300, replay_browser.menu_y + 80)
+          gprint(loc("rp_browser_info_character", replay.vs.P2_char), replay_browser.menu_x + 300, replay_browser.menu_y + 95)
 
-          if replay.vstime.ranked then
+          if replay.vs.ranked then
             gprint(loc("rp_browser_info_ranked"), replay_browser.menu_x + 200, replay_browser.menu_y + 120)
           end
         end

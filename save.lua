@@ -77,12 +77,12 @@ function write_replay_file(path, filename)
       else
         logger.debug("No Endless")
       end
-      if replay.vstime then
-        replay.vstime.I = compress_input_string(replay.vstime.I)
-        replay.vstime.in_buf = compress_input_string(replay.vstime.in_buf)
-        logger.debug("Compressed vstime I/in_buf")
+      if replay.vs then
+        replay.vs.I = compress_input_string(replay.vs.I)
+        replay.vs.in_buf = compress_input_string(replay.vs.in_buf)
+        logger.debug("Compressed vs I/in_buf")
       else 
-        logger.debug("No vstime")
+        logger.debug("No vs")
       end
       file:write(json.encode(replay))
       file:close()

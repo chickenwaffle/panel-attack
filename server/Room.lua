@@ -206,13 +206,13 @@ function Room.resolve_game_outcome(self, database)
       outcome = self.game_outcome_reports[1]
     end
     local gameID = database:insertGame(self.replay.vs.ranked)
-    self.replay.vstime.gameID = gameID
+    self.replay.vs.gameID = gameID
     if outcome ~= 0 then
-      database:insertPlayerGameResult(self.a.user_id, gameID, self.replay.vstime.P1_level, (self.a.player_number == outcome) and 1 or 2)
-      database:insertPlayerGameResult(self.b.user_id, gameID, self.replay.vstime.P2_level, (self.b.player_number == outcome) and 1 or 2)
+      database:insertPlayerGameResult(self.a.user_id, gameID, self.replay.vs.P1_level, (self.a.player_number == outcome) and 1 or 2)
+      database:insertPlayerGameResult(self.b.user_id, gameID, self.replay.vs.P2_level, (self.b.player_number == outcome) and 1 or 2)
     else
-      database:insertPlayerGameResult(self.a.user_id, gameID, self.replay.vstime.P1_level, 0)
-      database:insertPlayerGameResult(self.b.user_id, gameID, self.replay.vstime.P2_level, 0)
+      database:insertPlayerGameResult(self.a.user_id, gameID, self.replay.vs.P1_level, 0)
+      database:insertPlayerGameResult(self.b.user_id, gameID, self.replay.vs.P2_level, 0)
     end
 
     logger.debug("resolve_game_outcome says: " .. outcome)
@@ -238,7 +238,7 @@ function Room.resolve_game_outcome(self, database)
         path = path .. sep .. rep_a_name .. "-vs-" .. rep_b_name
       end
       local filename = "v" .. VERSION .. "-" .. string.format("%04d-%02d-%02d-%02d-%02d-%02d", now.year, now.month, now.day, now.hour, now.min, now.sec) .. "-" .. rep_a_name .. "-L" .. self.replay.vs.P1_level .. "-vs-" .. rep_b_name .. "-L" .. self.replay.vs.P2_level
-      if self.replay.vstime.ranked then
+      if self.replay.vs.ranked then
         filename = filename .. "-Ranked"
       else
         filename = filename .. "-Casual"
@@ -249,9 +249,9 @@ function Room.resolve_game_outcome(self, database)
         filename = filename .. "-draw"
       end
       filename = filename .. ".txt"
-      if self.replay.vstime and COMPRESS_REPLAYS_ENABLED then
-        self.replay.vstime.I = compress_input_string(self.replay.vstime.I)
-        self.replay.vstime.in_buf = compress_input_string(self.replay.vstime.in_buf)
+      if self.replay.vs and COMPRESS_REPLAYS_ENABLED then
+        self.replay.vs.I = compress_input_string(self.replay.vs.I)
+        self.replay.vs.in_buf = compress_input_string(self.replay.vs.in_buf)
         logger.debug("Compressed vs I/in_buf")
         logger.debug("saving compressed replay as " .. path .. sep .. filename)
       else
