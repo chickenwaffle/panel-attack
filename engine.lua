@@ -1359,6 +1359,7 @@ function Stack.simulate(self)
 
     -- Phase 0 //////////////////////////////////////////////////////////////
     -- Stack automatic rising
+    --[[
     if self.speed ~= 0 and not self.manual_raise and self.stop_time == 0 and not self.rise_lock then
       if self.match.mode == "puzzle" then
         -- only reduce health after the first swap to give the player a chance to strategize
@@ -1388,6 +1389,7 @@ function Stack.simulate(self)
         end
       end
     end
+    ]]
 
     if not self.panels_in_top_row and self.match.mode ~= "puzzle" and not self:has_falling_garbage() then
       self.health = self.max_health
