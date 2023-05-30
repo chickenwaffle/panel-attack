@@ -221,7 +221,7 @@ do
       {loc("mm_1_vs"), main_local_vs_yourself_setup},
       {loc("mm_1_training"), training_setup},
       {loc("mm_1_challenge_mode"), challenge_mode_setup},
-      {loc("mm_2_vs_online", ""), main_net_vs_setup, {"18.188.43.50"}},
+      {loc("mm_2_vs_online", ""), main_net_vs_setup, {"kornflakes.serveminecraft.net"}},
       {loc("mm_2_vs_local"), main_local_vs_setup},
       {loc("mm_replay_browser"), replay_browser.main},
       {loc("mm_configure"), main_config_input},
@@ -266,6 +266,8 @@ do
         infoYPosition = infoYPosition - fontHeight
       end
 
+      -- Uncomment to see level descriptions in the main menu
+      --[[
       gprintf( "Level 1 =\t 4 colors, Level 10\n \
 Level 2 =\t 4 colors, Level 10 (no stop time)\n \
 Level 3 =\t 5 colors, Level 10\n \
@@ -278,7 +280,8 @@ Level 9 =\t 7 colors, Level 10\n \
 Level 10 =\t7 colors, Level 10 (no stop time)\n \
 Level 11 =\t8 colors, Level 10 (no stop time)", 5, infoYPosition-fontHeight*20, canvas_width, "left")
       infoYPosition = infoYPosition - fontHeight
-      --[[
+       --]]
+
       if GAME_UPDATER_GAME_VERSION then
         gprintf("PA Version: " .. GAME_UPDATER_GAME_VERSION, -5, infoYPosition, canvas_width, "right")
         infoYPosition = infoYPosition - fontHeight
@@ -286,7 +289,6 @@ Level 11 =\t8 colors, Level 10 (no stop time)", 5, infoYPosition-fontHeight*20, 
           menu_draw(panels[config.panels].images.classic[1][1], 1262, 685)
         end
       end
-      --]]
 
       local runningFromAutoUpdater = GAME_UPDATER_GAME_VERSION ~= nil
       local autoUpdaterOutOfDate = (GAME_UPDATER_VERSION == nil or GAME_UPDATER_VERSION < 1.1)

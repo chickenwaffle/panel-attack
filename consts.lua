@@ -153,6 +153,20 @@ panels_to_next_speed =
   45, 45, 45, 45, 45, 45, 45, 45, 45, 45,
   45, 45, 45, 45, 45, 45, 45, 45, math.huge}
 
+LEVEL_DESCRIPTION = {
+"4 colors, Level 10",
+"4 colors, Level 10 (no stop time)",
+"5 colors, Level 10",
+"5 colors, Level 10 (no stop time)",
+"6 colors, Level 8",
+"6 colors, Level 10",
+"6 colors, Level 10 (no stop time)",
+"7 colors, Level 8",
+"7 colors, Level 10",
+"7 colors, Level 10 (no stop time)",
+"8 colors, Level 10 (no stop time)"
+}
+
 -- Server still needs to know what level the players are on, so this conversion table is necessary
 --                   1     2      3     4      5     6     7      8     9     10     11
 STOP_TIME_LEVELS = { true, false, true, false, true, true, false, true, true, false, false }

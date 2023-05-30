@@ -485,6 +485,10 @@ function select_screen_graphics.draw_levels(self, player, player_number, y_paddi
     if i == player.level then
       local cursorScale = 5 / themes[config.theme].images.IMG_level_cursor:getWidth()
       menu_drawf(themes[config.theme].images.IMG_level_cursor, self.render_x + drawX + level_width / 2, self.render_y + y_padding + themes[config.theme].images.IMG_levels[i]:getHeight() * 0.5 * level_scale, "center", "top", 0, cursorScale, cursorScale)
+      -- Draw level description underneath level selector
+      local description_x = self.render_x + leftRightIndicatorWidth + paddingWidth + level_width 
+      local description_y =  self.render_y + y_padding * 1.1 + themes[config.theme].images.IMG_levels[i]:getHeight() * 0.5 * level_scale
+      gprintf(LEVEL_DESCRIPTION[player.level], description_x, description_y, canvas_width, "left")
     end
 
     drawX = drawX + level_width
