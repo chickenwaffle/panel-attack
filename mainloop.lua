@@ -266,6 +266,19 @@ do
         infoYPosition = infoYPosition - fontHeight
       end
 
+      gprintf( "Level 1 =\t 4 colors, Level 10\n \
+Level 2 =\t 4 colors, Level 10 (no stop time)\n \
+Level 3 =\t 5 colors, Level 10\n \
+Level 4 =\t 5 colors, Level 10 (no stop time)\n \
+Level 5 =\t 6 colors, Level 8\n \
+Level 6 =\t 6 colors, Level 10\n \
+Level 7 =\t 6 colors, Level 10 (no stop time)\n \
+Level 8 =\t 7 colors, Level 8\n \
+Level 9 =\t 7 colors, Level 10\n \
+Level 10 =\t7 colors, Level 10 (no stop time)\n \
+Level 11 =\t8 colors, Level 10 (no stop time)", 5, infoYPosition-fontHeight*20, canvas_width, "left")
+      infoYPosition = infoYPosition - fontHeight
+      --[[
       if GAME_UPDATER_GAME_VERSION then
         gprintf("PA Version: " .. GAME_UPDATER_GAME_VERSION, -5, infoYPosition, canvas_width, "right")
         infoYPosition = infoYPosition - fontHeight
@@ -273,6 +286,7 @@ do
           menu_draw(panels[config.panels].images.classic[1][1], 1262, 685)
         end
       end
+      --]]
 
       local runningFromAutoUpdater = GAME_UPDATER_GAME_VERSION ~= nil
       local autoUpdaterOutOfDate = (GAME_UPDATER_VERSION == nil or GAME_UPDATER_VERSION < 1.1)

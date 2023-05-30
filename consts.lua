@@ -153,12 +153,17 @@ panels_to_next_speed =
   45, 45, 45, 45, 45, 45, 45, 45, 45, 45,
   45, 45, 45, 45, 45, 45, 45, 45, math.huge}
 
+-- Server still needs to know what level the players are on, so this conversion table is necessary
+--                   1     2      3     4      5     6     7      8     9     10     11
+STOP_TIME_LEVELS = { true, false, true, false, true, true, false, true, true, false, false }
+LEVEL_CONVERSION = { 10, 10, 10, 10, 8, 10, 10, 8, 10, 10, 10 }
+
 -- What speed level you start on.
 level_to_starting_speed        = {  1,  5,  9, 13, 17, 21, 25, 29, 27, 32, 45}
 -- How long you can spend at the top of the screen without dying, in frames ("Health").
 level_to_hang_time             = {121,101, 81, 66, 51, 41, 31, 21, 11,  1, 1}
 -- How many colors of panels can spawn in VS mode, not including metal panels.
-level_to_ncolors_vs            = {  5,  5,  5,  5,  5,  5,  5,  5,  6,  6, 6}
+level_to_ncolors_vs            = {  4,  4,  5,  5,  6,  6,  6,  7,  7,  7, 8 }
 -- How many colors of panels can spawn in time trial mode.
 level_to_ncolors_time          = {  5,  5,  6,  6,  6,  6,  6,  6,  6,  6, 6}
 -- How long panels will hover if not supported by anything, in frames.

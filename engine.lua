@@ -314,20 +314,20 @@ function Stack.setLevel(self, level)
   self.level = level
   if not self.speed then
     -- there is no UI for it yet but we may want to support using levels with a different starting speed at some point
-    self.speed = level_to_starting_speed[level]
+    self.speed = level_to_starting_speed[LEVEL_CONVERSION[level]]
   end
   -- mode 1: increase speed per time interval?
-  self.max_health = level_to_hang_time[level]
-  self.FRAMECOUNTS.HOVER = level_to_hover[level]
-  self.FRAMECOUNTS.GPHOVER = level_to_garbage_panel_hover[level]
-  self.FRAMECOUNTS.FLASH = level_to_flash[level]
-  self.FRAMECOUNTS.FACE = level_to_face[level]
-  self.FRAMECOUNTS.POP = level_to_pop[level]
+  self.max_health = level_to_hang_time[LEVEL_CONVERSION[self.level]]
+  self.FRAMECOUNTS.HOVER = level_to_hover[LEVEL_CONVERSION[self.level]]
+  self.FRAMECOUNTS.GPHOVER = level_to_garbage_panel_hover[LEVEL_CONVERSION[self.level]]
+  self.FRAMECOUNTS.FLASH = level_to_flash[LEVEL_CONVERSION[self.level]]
+  self.FRAMECOUNTS.FACE = level_to_face[LEVEL_CONVERSION[self.level]]
+  self.FRAMECOUNTS.POP = level_to_pop[LEVEL_CONVERSION[self.level]]
   self.FRAMECOUNTS.MATCH = self.FRAMECOUNTS.FACE + self.FRAMECOUNTS.FLASH
-  self.combo_constant = level_to_combo_constant[level]
-  self.combo_coefficient = level_to_combo_coefficient[level]
-  self.chain_constant = level_to_chain_constant[level]
-  self.chain_coefficient = level_to_chain_coefficient[level]
+  self.combo_constant = level_to_combo_constant[LEVEL_CONVERSION[self.level]]
+  self.combo_coefficient = level_to_combo_coefficient[LEVEL_CONVERSION[self.level]]
+  self.chain_constant = level_to_chain_constant[LEVEL_CONVERSION[self.level]]
+  self.chain_coefficient = level_to_chain_coefficient[LEVEL_CONVERSION[self.level]]
   if self.match.mode == "2ptime" then
     self.NCOLORS = level_to_ncolors_time[level]
   else
@@ -2255,7 +2255,7 @@ function Stack.new_row(self)
     if self.opponentStack then
       opponentLevel = self.opponentStack.level
     end
-    self.panel_buffer = PanelGenerator.makePanels(self.match.seed + self.panelGenCount, self.NCOLORS, self.panel_buffer, self.match.mode, self.level, opponentLevel)
+    self.panel_buffer = PanelGenerator.makePanels(self.match.seed + self.panelGenCount, self.NCOLORS, self.panel_buffer, self.match.mode, LEVEL_CONVERSION[self.level], opponentLevel)
     logger.debug("generating panels with seed: " .. self.match.seed + self.panelGenCount .. " buffer: " .. self.panel_buffer)
     self.panelGenCount = self.panelGenCount + 1
   end
@@ -2396,8 +2396,8 @@ function Stack.onPop(self, panel)
     self.score = self.score + 10
 
     self.panels_cleared = self.panels_cleared + 1
-    if self.match.mode == "vs" and self.panels_cleared % level_to_metal_panel_frequency[self.level] == 0 then
-      self.metal_panels_queued = min(self.metal_panels_queued + 1, level_to_metal_panel_cap[self.level])
+    if self.match.mode == "vs" and self.panels_cleared % level_to_metal_panel_frequency[LEVEL_CONVERSION[self.level]] == 0 then
+      self.metal_panels_queued = min(self.metal_panels_queued + 1, level_to_metal_panel_cap[LEVEL_CONVERSION[self.level]])
     end
     if self:shouldChangeSoundEffects() then
       SFX_Pop_Play = 1

@@ -353,7 +353,7 @@ end
 
 function Stack:refillGarbagePanelBuffer()
   local garbagePanels = PanelGenerator.makeGarbagePanels(self.match.seed + self.garbageGenCount, self.NCOLORS, self.gpanel_buffer,
-                                                         self.match.mode, self.level)
+                                                         self.match.mode, LEVEL_CONVERSION[self.level])
   self.gpanel_buffer = self.gpanel_buffer .. garbagePanels
   logger.debug("Generating garbage with seed: " .. self.match.seed + self.garbageGenCount .. " buffer: " .. self.gpanel_buffer)
   self.garbageGenCount = self.garbageGenCount + 1
@@ -414,37 +414,39 @@ function Stack:recordChainHistory()
 end
 
 function Stack:awardStopTime(isChain, comboSize)
-  if comboSize > 3 or isChain then
-    local stopTime
-    if self.panels_in_top_row and isChain then
-      if self.level then
-        local length = (self.chain_counter > 4) and 6 or self.chain_counter
-        stopTime = -8 * self.level + 168 + (length - 1) * (-2 * self.level + 22)
+  if STOP_TIME_LEVELS[self.level] then
+    if comboSize > 3 or isChain then
+      local stopTime
+      if self.panels_in_top_row and isChain then
+        if self.level then
+          local length = (self.chain_counter > 4) and 6 or self.chain_counter
+          stopTime = -8 * LEVEL_CONVERSION[self.level] + 168 + (length - 1) * (-2 * LEVEL_CONVERSION[self.level] + 22)
+        else
+          stopTime = stop_time_danger[self.difficulty]
+        end
+      elseif self.panels_in_top_row then
+        if self.level then
+          local length = (comboSize < 9) and 2 or 3
+          stopTime = self.chain_coefficient * length + self.chain_constant
+        else
+          stopTime = stop_time_danger[self.difficulty]
+        end
+      elseif isChain then
+        if self.level then
+          local length = math.min(self.chain_counter, 13)
+          stopTime = self.chain_coefficient * length + self.chain_constant
+        else
+          stopTime = stop_time_chain[self.difficulty]
+        end
       else
-        stopTime = stop_time_danger[self.difficulty]
+        if self.level then
+          stopTime = self.combo_coefficient * comboSize + self.combo_constant
+        else
+          stopTime = stop_time_combo[self.difficulty]
+        end
       end
-    elseif self.panels_in_top_row then
-      if self.level then
-        local length = (comboSize < 9) and 2 or 3
-        stopTime = self.chain_coefficient * length + self.chain_constant
-      else
-        stopTime = stop_time_danger[self.difficulty]
-      end
-    elseif isChain then
-      if self.level then
-        local length = math.min(self.chain_counter, 13)
-        stopTime = self.chain_coefficient * length + self.chain_constant
-      else
-        stopTime = stop_time_chain[self.difficulty]
-      end
-    else
-      if self.level then
-        stopTime = self.combo_coefficient * comboSize + self.combo_constant
-      else
-        stopTime = stop_time_combo[self.difficulty]
-      end
+      self.stop_time = math.max(self.stop_time, stopTime)
     end
-    self.stop_time = math.max(self.stop_time, stopTime)
   end
 end
 
