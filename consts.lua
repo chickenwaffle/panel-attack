@@ -119,7 +119,7 @@ stop_time_danger = {600, 420, 240, 180}
 difficulty_to_ncolors_endless = {5,6,6,6}
 difficulty_to_ncolors_1Ptime = {6,6,6,6}
 
-time_attack_time = 120
+TIME_ATTACK_TIME = 120
 -- Yes, 2 is slower than 1 and 50..99 are the same.
 speed_to_rise_time = table.map(
    {942, 983, 838, 790, 755, 695, 649, 604, 570, 515,
@@ -182,7 +182,8 @@ level_to_chain_coefficient     = { 20, 18, 16, 14, 12, 10,  8,  6,  4,  2, 1}
 -- How many panels you have to pop to earn a metal panel in your next row.
 level_to_metal_panel_frequency = { 12, 14, 16, 19, 23, 26, 29, 33, 37, 41, 18}
 -- How many panels you can have at most in your metal panel queue.
-level_to_metal_panel_cap       = { 21, 18, 18, 15, 15, 12,  9,  6,  6,  3, 3}
+-- This is a time attack build. No metal panels are necessary here.
+level_to_metal_panel_cap       = { 0,0,0,0,0,0,0,0,0,0,0 }
 
 -- Stage clear seems to use a variant of vs mode's speed system,
 -- except that the amount of time between increases is not constant.

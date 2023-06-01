@@ -634,14 +634,6 @@ function Panel.extendedRegularColorsArray()
   return result
 end
 
--- returns a table with panel color indices
-function Panel.allPossibleColorsArray()
-  local result = Panel.extendedRegularColorsArray()
-  result[#result + 1] = 8 -- shock
-  result[#result + 1] = 9 -- colorless
-  return result
-end
-
 -- updates the panel for this frame based on its state and its surroundings
 function Panel.update(self, panels)
   -- reset all flags that only count for 1 frame to alert panels above of special behavior

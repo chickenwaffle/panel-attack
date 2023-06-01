@@ -1221,7 +1221,13 @@ end
 -- and to play normal music when nothing in top 3 or 4 rows
 function Stack.shouldPlayDangerMusic(self)
   if not self.danger_music then
+    if self.game_stopwatch > TIME_ATTACK_TIME * 60 - 900 --[[15 seconds assuming 60 FPS]] then
+      return true
+    else
+      return false
+    end
     -- currently playing normal music
+    --[[
     for row = self.height - 2, self.height do
       local panelRow = self.panels[row]
       for column = 1, self.width do
@@ -1255,7 +1261,11 @@ function Stack.shouldPlayDangerMusic(self)
     end
   end
 
-  return false
+  --return false
+  --]]
+  end
+  -- Needs to return true so every other call doesn't end up being 'nil' (kornflakes does not know why this happens)
+  return true
 end
 
 function Stack.updatePanels(self)
@@ -1591,9 +1601,12 @@ function Stack.simulate(self)
         end
 
         local wantsDangerMusic = self.danger_music
+        -- Not needed for vs time attack
+        --[[
         if self.opponentStack and self.opponentStack.danger_music then
           wantsDangerMusic = true
         end
+        --]]
 
         if dynamicMusic then
           local fadeLength = 60
@@ -1654,6 +1667,10 @@ function Stack.simulate(self)
           end
         end
       end
+    end
+
+    if self.game_stopwatch and self.game_stopwatch >= TIME_ATTACK_TIME * 60 - 900 and self.game_stopwatch % 60 == 0 and self.game_stopwatch < TIME_ATTACK_TIME * 60 and self.which == 1 and self:shouldChangeSoundEffects() then
+      SFX_Countdown_Play = 1
     end
 
     -- Update Sound FX
@@ -1916,21 +1933,19 @@ function Stack.game_ended(self)
 
   local gameEndedClockTime = self.match:gameEndedClockTime()
 
-  if self.match.mode == "time" or self.match.mode == "vs" then
+  if self.match.mode == "vs" then
     if self.match.simulatedOpponent and self.match.simulatedOpponent:isDefeated() then
       return true
     end
-
+  end
+  if self.match.mode == "vs" or self.match.mode == "time" then
     -- Note we use "greater" and not "greater than or equal" because our stack may be currently processing this clock frame.
     -- At the end of the clock frame it will be incremented and we know we have process the game over clock frame.
     if gameEndedClockTime > 0 and self.clock > gameEndedClockTime then
       return true
     end
-  elseif self.match.mode == "time" then
-    if gameEndedClockTime > 0 and self.clock > gameEndedClockTime then
-      return true
-    elseif self.game_stopwatch then
-      if self.game_stopwatch > time_attack_time * 60 then
+    if self.game_stopwatch then
+      if self.game_stopwatch == TIME_ATTACK_TIME * 60 then
         return true
       end
     end
@@ -1965,7 +1980,7 @@ function Stack.gameResult(self)
       return -1
     -- We can't call it until someone has lost and everyone has played up to that point in time.
     elseif self.opponentStack:game_ended() then
-      if self.game_over_clock == gameEndedClockTime and self.opponentStack.game_over_clock == gameEndedClockTime then
+      if self.game_stopwatch == TIME_ATTACK_TIME * 60 then
         if P1.score > P2.score then
           return 1
         elseif P1.score < P2.score then
@@ -1982,7 +1997,7 @@ function Stack.gameResult(self)
     if gameEndedClockTime > 0 and self.clock > gameEndedClockTime then
       return -1
     elseif self.game_stopwatch then
-      if self.game_stopwatch > time_attack_time * 60 then
+      if self.game_stopwatch == TIME_ATTACK_TIME * 60 then
         return 1
       end
     end
