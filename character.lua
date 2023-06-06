@@ -354,6 +354,45 @@ function Character.sound_uninit(self)
   end
 end
 
+--- Stack number 1 equals left side, 2 is right side
+function Character:portraitImage(stackNumber)
+  local portraitImageName = self:portraitName(stackNumber)
+  return self.images[portraitImageName]
+end
+
+function Character:portraitName(stackNumber)
+  local portrait_image = "portrait"
+  if stackNumber == 2 and self:portraitIsReversed(stackNumber) == false then
+    portrait_image = "portrait2"
+  end
+  return portrait_image
+end
+
+function Character:portraitIsReversed(stackNumber)
+  if stackNumber == 2 and self.images["portrait2"] == nil then
+    return true
+  end
+  return false
+end
+
+function Character:drawPortrait(stackNumber, x, y, fade)
+  local portraitImage = self:portraitImage(stackNumber)
+  local portraitImageWidth, portraitImageHeight = portraitImage:getDimensions()
+
+  local portraitImageX = x
+  local portraitMirror = 1
+  local portraitWidth = 96
+  local portraitHeight = 192
+  if self:portraitIsReversed(stackNumber) then
+    portraitImageX = portraitImageX + portraitWidth
+    portraitMirror = -1
+  end
+  draw(portraitImage, portraitImageX, y, 0, (portraitWidth / portraitImageWidth) * portraitMirror, portraitHeight / portraitImageHeight)
+  if fade > 0 then
+    grectangle_color("fill", x, y, portraitWidth, portraitHeight, 0, 0, 0, fade)
+  end
+end
+
 function Character.reassignLegacySfx(self)
   if self.chain_style == chainStyle.classic then
     local maxIndex = -1
@@ -382,11 +421,11 @@ function Character.reassignLegacySfx(self)
     end
     
     self:fillInMissingSounds(self.sounds.chain, "chain", maxIndex)
+  end
 
-    if #self.sounds.shock > 0 then
-      -- combo_echo won't get used if shock is present, so it shouldn't show up in sound test any longer
-      self.sounds.combo_echo = nil
-    end
+  if #self.sounds.shock > 0 then
+    -- combo_echo won't get used if shock is present, so it shouldn't show up in sound test any longer
+    self.sounds.combo_echo = {}
   end
 end
 
@@ -450,6 +489,10 @@ function Character.loadSfx(self, name, yields)
 
   if perSizeSfxStart[name] then
     self:fillInMissingSounds(sfx, name, maxIndex)
+  else
+    -- #table may yield erroneous (too large) results for tables with gaps 
+    -- Character:playRandomSfx() relies on #table being accurate so we redo the table here if it has gaps
+    sfx = table.toContinuouslyIndexedTable(sfx)
   end
 
   return sfx
@@ -531,7 +574,8 @@ end
 local function playRandomSfx(sfxTable, fallback)
   if not GAME.muteSoundEffects then
     if sfxTable and #sfxTable > 0 then
-      table.getRandomElement(sfxTable):play()
+      local sfx = table.getRandomElement(sfxTable)
+      sfx:play()
     elseif fallback then
       playRandomSfx(fallback)
     end
@@ -594,14 +638,18 @@ function Character.playAttackSfx(self, attack)
         stopIfPlaying(v[i])
       end
     end
-    for i = 1, #self.sounds.combo_echo do
-      stopIfPlaying(self.sounds.combo_echo[i])
-    end
-    for _, v in pairs(self.sounds.shock) do
-      for i = 1, #v do
-        stopIfPlaying(v[i])
+    if table.length(self.sounds.shock) > 0 then
+      for _, v in pairs(self.sounds.shock) do
+        for i = 1, #v do
+          stopIfPlaying(v[i])
+        end
+      end
+    else
+      for i = 1, #self.sounds.combo_echo do
+        stopIfPlaying(self.sounds.combo_echo[i])
       end
     end
+
     for _, v in pairs(self.sounds.chain) do
       for i = 1, #v do
         stopIfPlaying(v[i])

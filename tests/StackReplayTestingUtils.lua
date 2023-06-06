@@ -5,6 +5,18 @@ function StackReplayTestingUtils:simulateReplayWithPath(path)
   return self:fullySimulateMatch(match)
 end
 
+function StackReplayTestingUtils.createEndlessMatch(speed, difficulty, level)
+  local match = Match("endless")
+  match.seed = 1
+  local P1 = Stack{which=1, match=match, wantsCanvas=false, is_local=true, panels_dir=config.panels, speed=speed, difficulty=difficulty, level=level, character=config.character, inputMethod="controller"}
+
+  match.P1 = P1
+  P1:wait_for_random_character()
+  P1:starting_state()
+
+  return match
+end
+
 function StackReplayTestingUtils:fullySimulateMatch(match)
   local startTime = love.timer.getTime()
 
@@ -21,18 +33,18 @@ function StackReplayTestingUtils:fullySimulateMatch(match)
 end
 
 function StackReplayTestingUtils:simulateStack(stack, clockGoal)
-  while stack.CLOCK < clockGoal do
+  while stack.clock < clockGoal do
     stack:run()
     stack:saveForRollback()
   end
-  assert(match.P1.CLOCK == clockGoal)
+  assert(stack.clock == clockGoal)
 end
 
 function StackReplayTestingUtils:simulateMatchUntil(match, clockGoal)
-  while match.P1.CLOCK < clockGoal do
+  while match.P1.clock < clockGoal do
       match:run()
   end
-  assert(match.P1.CLOCK == clockGoal)
+  assert(match.P1.clock == clockGoal)
 end
 
 -- Runs the given clock time both with and without rollback
@@ -46,7 +58,7 @@ function StackReplayTestingUtils:setupReplayWithPath(path)
   GAME.muteSoundEffects = true
 
   Replay.loadFromPath(path)
-  Replay.loadFromFile(replay)
+  Replay.loadFromFile(replay, false)
 
   assert(GAME ~= nil)
   assert(GAME.match ~= nil)

@@ -259,15 +259,8 @@ function love.keypressed(key, scancode, rep)
       end
 
       if stack then
-        local data = stack:getAttackPatternData()
-        pcall(
-          function()
-            local file = love.filesystem.newFile("dumpAttackPattern.json")
-            file:open("w")
-            file:write(json.encode(data))
-            file:close()
-          end
-        )
+        local data, state = stack:getAttackPatternData()
+        saveJSONToPath(data, state, "dumpAttackPattern.json")
         return true
       end
     end
@@ -295,7 +288,7 @@ function love.keypressed(key, scancode, rep)
   end
 
   local function toggleDebugMode()
-    if key == "f10" and (love.keyboard.isDown("rctrl") or love.keyboard.isDown("lctrl")) and (love.keyboard.isDown("lalt") or love.keyboard.isDown("ralt")) then
+    if key == "d" and (love.keyboard.isDown("rctrl") or love.keyboard.isDown("lctrl")) and (love.keyboard.isDown("lalt") or love.keyboard.isDown("ralt")) and (love.keyboard.isDown("lshift") or love.keyboard.isDown("rshift")) then
       config.debug_mode = not config.debug_mode
     end
   end

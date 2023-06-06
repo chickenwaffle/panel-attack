@@ -1,11 +1,12 @@
 local logger = require("logger")
+require("ChallengeMode")
 local select_screen = require("select_screen.select_screen")
 local replay_browser = require("replay_browser")
 local options = require("options")
-local utf8 = require("utf8")
+local utf8 = require("utf8Additions")
 local analytics = require("analytics")
 local main_config_input = require("config_inputs")
-require("replay")
+local Replay = require("replay")
 
 local wait, resume = coroutine.yield, coroutine.resume
 
@@ -56,7 +57,6 @@ function fmainloop()
   if #FileUtil.getFilteredDirectoryItems("training") == 0 then
     recursive_copy("default_data/training", "training")
   end
-  read_attack_files("training")
 
   --check for game updates
   if GAME_UPDATER_CHECK_UPDATE_INGAME then
@@ -72,16 +72,25 @@ function fmainloop()
     require("PuzzleTests")
     require("ServerQueueTests")
     require("StackTests")
+    require("tests.JsonEncodingTests")
+    require("tests.NetworkProtocolTests")
     require("tests.ThemeTests")
+    require("tests.TouchDataEncodingTests")
+    require("tests.utf8AdditionsTests")
     require("table_util_tests")
     require("utilTests")
+    --require("AttackFileGenerator") -- TODO: Not really a unit test... generates attack files
     -- Medium level tests (integration tests)
+    require("tests.ReplayTests")
     require("tests.StackReplayTests")
     require("tests.StackRollbackReplayTests")
-    -- Performance Tests
-    if PERFORMANCE_TESTS_ENABLED then
-      require("tests/performanceTests")
-    end
+    require("tests.StackTouchReplayTests")
+  end
+  if PERFORMANCE_TESTS_ENABLED then
+    GAME:drawLoadingString("Running Performance Tests")
+    wait()
+    require("tests.StackReplayPerformanceTests")
+    --require("tests.StringPerformanceTests") -- Disabled for now since they just prove lua tables are faster for rapid concatenation of strings
   end
 
   local func, arg = main_title, nil
@@ -220,8 +229,8 @@ do
     }
 
     if config.debugShowServers then
-      table.insert(items, 7, {"Beta Server", main_net_vs_setup, {"betaserver.panelattack.com", 59569}})
-      table.insert(items, 8, {"Localhost Server", main_net_vs_setup, {"localhost"}})
+      table.insert(items, 8, {"Beta Server", main_net_vs_setup, {"betaserver.panelattack.com", 59569}})
+      table.insert(items, 9, {"Localhost Server", main_net_vs_setup, {"localhost"}})
     end
 
     if TESTS_ENABLED then
@@ -324,63 +333,10 @@ local function pick_use_music_from()
   end
 end
 
-function Stack.wait_for_random_character(self)
-  if self.character == random_character_special_value then
-    self.character = table.getRandomElement(characters_ids_for_current_theme)
-  end
-  if characters[self.character]:is_bundle() then -- may have picked a bundle
-    self.character = table.getRandomElement(characters[self.character].sub_characters)
-  end
-  character_loader_load(self.character)
-  character_loader_wait()
-end
-
 local function commonGameSetup()
   stop_the_music()
   use_current_stage()
   pick_use_music_from()
-end
-
-function createNewReplay(match)
-  local mode = match.mode
-  local result = {}
-  result.engineVersion = VERSION
-
-  result[mode] = {}
-  local modeReplay = result[mode]
-
-  modeReplay.seed = match.seed
-
-  if mode == "endless" or mode == "time" then
-    modeReplay.do_countdown = P1.do_countdown or false
-    modeReplay.speed = P1.speed
-    modeReplay.difficulty = P1.difficulty
-    modeReplay.cur_wait_time = P1.cur_wait_time or default_input_repeat_delay
-    modeReplay.in_buf = ""
-  elseif mode == "vs" then
-    modeReplay.P = ""
-    modeReplay.O = ""
-    modeReplay.I = ""
-    modeReplay.Q = ""
-    modeReplay.in_buf = ""
-    modeReplay.P1_level = P1.level
-    modeReplay.P1_name = GAME.battleRoom.playerNames[1]
-    modeReplay.P1_char = P1.character
-    modeReplay.P1_char = P1.character
-    modeReplay.P1_cur_wait_time = P1.cur_wait_time
-    modeReplay.do_countdown = true
-    if P2 then
-      modeReplay.P2_level = P2.level
-      modeReplay.P2_name = GAME.battleRoom.playerNames[2]
-      modeReplay.P2_char = P2.character
-      modeReplay.P2_cur_wait_time = P2.cur_wait_time
-
-      modeReplay.P1_win_count = GAME.match.battleRoom.playerWinCounts[P1.player_number]
-      modeReplay.P2_win_count = GAME.match.battleRoom.playerWinCounts[P2.player_number]
-    end
-  end
-
-  return result
 end
 
 local function handle_pause(self)
@@ -399,106 +355,6 @@ local function handle_pause(self)
       end
     end
   end
-end
-
-local function addReplayStatisticsToReplay(replay)
-  local r = replay[GAME.match.mode]
-  r.duration = GAME.match:gameEndedClockTime()
-  if GAME.match.mode == "vs" and P2 then
-    r.match_type = match_type
-    local p1GameResult = P1:gameResult()
-    if p1GameResult == 1 then
-      r.winner = P1.which
-    elseif p1GameResult == -1 then
-      r.winner = P2.which
-    elseif p1GameResult == 0 then
-      r.winner = 0
-    end
-  end
-  r.playerStats = {}
-  
-  if P1 then
-    r.playerStats[P1.which] = {}
-    r.playerStats[P1.which].number = P1.which
-    r.playerStats[P1.which] = P1.analytic.data
-    r.playerStats[P1.which].score = P1.score
-    if GAME.match.mode == "vs" and GAME.match.room_ratings then
-      r.playerStats[P1.which].rating = GAME.match.room_ratings[P1.which]
-    end
-  end
-
-  if P2 then
-    r.playerStats[P2.which] = {}
-    r.playerStats[P2.which].number = P2.which
-    r.playerStats[P2.which] = P2.analytic.data
-    r.playerStats[P2.which].score = P2.score
-    if GAME.match.mode == "vs" and GAME.match.room_ratings then
-      r.playerStats[P2.which].rating = GAME.match.room_ratings[P2.which]
-    end
-  end
-
-  return replay
-end
-
-local function finalizeAndWriteReplay(extraPath, extraFilename)
-  replay = addReplayStatisticsToReplay(replay)
-  replay[GAME.match.mode].in_buf = table.concat(P1.confirmedInput)
-  replay[GAME.match.mode].stage = current_stage
-
-  local now = os.date("*t", to_UTC(os.time()))
-  local sep = "/"
-  local path = "replays" .. sep .. "v" .. VERSION .. sep .. string.format("%04d" .. sep .. "%02d" .. sep .. "%02d", now.year, now.month, now.day)
-  if extraPath then
-    path = path .. sep .. extraPath
-  end
-  local filename = "v" .. VERSION .. "-" .. string.format("%04d-%02d-%02d-%02d-%02d-%02d", now.year, now.month, now.day, now.hour, now.min, now.sec)
-  if extraFilename then
-    filename = filename .. "-" .. extraFilename
-  end
-  filename = filename .. ".json"
-  logger.debug("saving replay as " .. path .. sep .. filename)
-  write_replay_file(path, filename)
-end
-
-local function finalizeAndWriteVsReplay(battleRoom, outcome_claim, incompleteGame)
-
-  incompleteGame = incompleteGame or false
-  
-  local extraPath, extraFilename = "", ""
-
-  if GAME.match:warningOccurred() then
-    extraFilename = extraFilename .. "-WARNING-OCCURRED"
-  end
-
-  if P2 then
-    replay[GAME.match.mode].I = table.concat(P2.confirmedInput)
-
-    local rep_a_name, rep_b_name = battleRoom.playerNames[1], battleRoom.playerNames[2]
-    --sort player names alphabetically for folder name so we don't have a folder "a-vs-b" and also "b-vs-a"
-    if rep_b_name < rep_a_name then
-      extraPath = rep_b_name .. "-vs-" .. rep_a_name
-    else
-      extraPath = rep_a_name .. "-vs-" .. rep_b_name
-    end
-    extraFilename = extraFilename .. rep_a_name .. "-L" .. P1.level .. "-vs-" .. rep_b_name .. "-L" .. P2.level
-    if match_type and match_type ~= "" then
-      extraFilename = extraFilename .. "-" .. match_type
-    end
-    if incompleteGame then
-      extraFilename = extraFilename .. "-INCOMPLETE"
-    else
-      if outcome_claim == 1 or outcome_claim == 2 then
-        extraFilename = extraFilename .. "-P" .. outcome_claim .. "wins"
-      elseif outcome_claim == 0 then
-        extraFilename = extraFilename .. "-draw"
-      end
-    end
-  else -- vs Self
-    extraPath = "Vs Self"
-    extraFilename = extraFilename .. "vsSelf-" .. "L" .. P1.level
-  end
-
-  finalizeAndWriteReplay(extraPath, extraFilename)
 end
 
 local function runMainGameLoop(updateFunction, variableStepFunction, abortGameFunction, processGameResultsFunction)
@@ -533,8 +389,8 @@ local function runMainGameLoop(updateFunction, variableStepFunction, abortGameFu
               handle_pause()
 
               if menu_escape_game() then
-                GAME:clearMatch()
                 returnFunction = abortGameFunction()
+                GAME:clearMatch()
               end
             end
           end
@@ -566,14 +422,14 @@ local function main_endless_time_setup(mode, speed, difficulty, level)
   end
   commonGameSetup()
 
-  P1 = Stack{which=1, match=GAME.match, is_local=true, panels_dir=config.panels, speed=speed, difficulty=difficulty, level=level, character=config.character}
+  P1 = Stack{which=1, match=GAME.match, is_local=true, panels_dir=config.panels, speed=speed, difficulty=difficulty, level=level, character=config.character, inputMethod=config.inputMethod}
 
   GAME.match.P1 = P1
   P1:wait_for_random_character()
   P1.do_countdown = config.ready_countdown_1P or false
   P2 = nil
 
-  replay = createNewReplay(GAME.match)
+  replay = Replay.createNewReplay(GAME.match)
 
   P1:starting_state()
 
@@ -607,7 +463,7 @@ local function main_endless_time_setup(mode, speed, difficulty, level)
         extraPath = "Time Attack"
         extraFilename = "Spd" .. stack.speed .. "-Dif" .. stack.difficulty .. "-timeattack"
       end
-      finalizeAndWriteReplay(extraPath, extraFilename)
+      Replay.finalizeAndWriteReplay(extraPath, extraFilename, GAME.match, replay)
     end
 
     GAME.input:allowAllInputConfigurations()
@@ -630,7 +486,7 @@ local function createBasicTrainingMode(name, width, height)
     attackPatterns[#attackPatterns+1] = {width = width, height = height, startTime = i, metal = false, chain = false, endsChain = false}
   end
 
-  local customTrainingModeData = {name = name, delayBeforeStart = delayBeforeStart, delayBeforeRepeat = delayBeforeRepeat, attackPatterns = attackPatterns}
+  local customTrainingModeData = {name = name, attackSettings = {delayBeforeStart = delayBeforeStart, delayBeforeRepeat = delayBeforeRepeat, attackPatterns = attackPatterns}}
 
   return customTrainingModeData
 end
@@ -645,8 +501,8 @@ function training_setup()
   customTrainingModes[1] = createBasicTrainingMode(loc("combo_storm"), 4, 1)
   customTrainingModes[2] = createBasicTrainingMode(loc("factory"), 6, 2)
   customTrainingModes[3] = createBasicTrainingMode(loc("large_garbage"), 6, 12)
-  for customfile, value in ipairs(trainings) do
-    customTrainingModes[#customTrainingModes+1] = value
+  for _, value in ipairs(readAttackFiles("training")) do
+    customTrainingModes[#customTrainingModes+1] = {name = value.name, attackSettings = value}
   end
   
   local ret = nil
@@ -709,8 +565,9 @@ function training_setup()
     ret = {main_select_mode}
   end
 
-  local function start_custom_game()
+  local function start_training()
     customTrainingModes[0] = createBasicTrainingMode("", trainingModeSettings.width, trainingModeSettings.height)
+
     ret = {main_local_vs_yourself_setup, {customTrainingModes[customModeID]}}
   end
 
@@ -722,7 +579,7 @@ function training_setup()
   trainingSettingsMenu:add_button("Custom", goToStart, goEscape, custom_left, custom_right)
   trainingSettingsMenu:add_button(loc("width"), nextMenu, goEscape, decrease_width, increase_width)
   trainingSettingsMenu:add_button(loc("height"), nextMenu, goEscape, decrease_height, increase_height)
-  trainingSettingsMenu:add_button(loc("go_"), start_custom_game, goEscape)
+  trainingSettingsMenu:add_button(loc("go_"), start_training, goEscape)
   trainingSettingsMenu:add_button(loc("back"), exitSettings, exitSettings)
   trainingSettingsMenu:set_button_setting(1, customTrainingModes[customModeID].name)
   trainingSettingsMenu:set_button_setting(2, trainingModeSettings.width)
@@ -739,6 +596,74 @@ function training_setup()
 
     if ret then
       trainingSettingsMenu:remove_self()
+      return unpack(ret)
+    end
+  end
+end
+
+function challenge_mode_setup()
+  local difficultySettings = {}
+  local customModeID = 1
+  difficultySettings[#difficultySettings+1] = { name = loc("challenge_difficulty_" .. #difficultySettings+1), challengeMode = ChallengeMode(#difficultySettings+1) }
+  difficultySettings[#difficultySettings+1] = { name = loc("challenge_difficulty_" .. #difficultySettings+1), challengeMode = ChallengeMode(#difficultySettings+1) }
+  difficultySettings[#difficultySettings+1] = { name = loc("challenge_difficulty_" .. #difficultySettings+1), challengeMode = ChallengeMode(#difficultySettings+1) }
+  difficultySettings[#difficultySettings+1] = { name = loc("challenge_difficulty_" .. #difficultySettings+1), challengeMode = ChallengeMode(#difficultySettings+1) }
+  difficultySettings[#difficultySettings+1] = { name = loc("challenge_difficulty_" .. #difficultySettings+1), challengeMode = ChallengeMode(#difficultySettings+1) }
+  difficultySettings[#difficultySettings+1] = { name = loc("challenge_difficulty_" .. #difficultySettings+1), challengeMode = ChallengeMode(#difficultySettings+1) }
+
+  local ret = nil
+  local menu_x, menu_y = unpack(themes[config.theme].main_menu_screen_pos)
+
+  local challengeModeMenu
+
+  local function update_custom_setting()
+    challengeModeMenu:set_button_setting(1, difficultySettings[customModeID].name)
+  end
+
+  local function custom_right()
+    customModeID = bound(1, customModeID + 1, #difficultySettings)
+    update_custom_setting()
+  end
+
+  local function custom_left()
+    customModeID = bound(1, customModeID - 1, #difficultySettings)
+    update_custom_setting()
+  end
+
+  local function goToStart()
+    challengeModeMenu:set_active_idx(#challengeModeMenu.buttons - 1)
+  end
+
+  local function goEscape()
+    challengeModeMenu:set_active_idx(#challengeModeMenu.buttons)
+  end
+
+  local function exitSettings()
+    ret = {main_select_mode}
+  end
+
+  local function start_challenge()
+    ret = {main_local_vs_yourself_setup, {difficultySettings[customModeID]}}
+  end
+
+  
+  challengeModeMenu = Click_menu(menu_x, menu_y, nil, themes[config.theme].main_menu_max_height, 1)
+  challengeModeMenu:add_button("Difficulty", goToStart, goEscape, custom_left, custom_right)
+  challengeModeMenu:add_button(loc("go_"), start_challenge, goEscape)
+  challengeModeMenu:add_button(loc("back"), exitSettings, exitSettings)
+  challengeModeMenu:set_button_setting(1, difficultySettings[customModeID].name)
+
+  while true do
+    challengeModeMenu:draw()
+    wait()
+    variable_step(
+      function()
+        challengeModeMenu:update()
+      end
+    )
+
+    if ret then
+      challengeModeMenu:remove_self()
       return unpack(ret)
     end
   end
@@ -1400,7 +1325,7 @@ function main_net_vs()
       local messages = server_queue:pop_all_with("leave_room")
       for _, msg in ipairs(messages) do
         if msg.leave_room then -- lost room during game, go back to lobby
-          finalizeAndWriteVsReplay(GAME.match.battleRoom, 0, true)
+          Replay.finalizeAndWriteVsReplay(GAME.match.battleRoom, 0, true, GAME.match, replay)
 
           -- Show a message that the match connection was lost along with the average frames behind.
           local message = loc("ss_room_closed_in_game")
@@ -1454,7 +1379,7 @@ function main_net_vs()
 
     if not GAME.battleRoom.spectating then
       if P1.tooFarBehindError or P2.tooFarBehindError then
-        finalizeAndWriteVsReplay(GAME.match.battleRoom, 0, true)
+        Replay.finalizeAndWriteVsReplay(GAME.match.battleRoom, 0, true, GAME.match, replay)
         GAME:clearMatch()
         json_send({leave_room = true})
         local ip = GAME.connected_server_ip
@@ -1493,10 +1418,13 @@ function main_net_vs()
       local end_text = matchOutcome["end_text"]
       local winSFX = matchOutcome["winSFX"]
       local outcome_claim = matchOutcome["outcome_claim"]
+      if outcome_claim ~= 0 then
+        GAME.battleRoom.playerWinCounts[outcome_claim] = GAME.battleRoom.playerWinCounts[outcome_claim] + 1
+      end
       
       json_send({game_over = true, outcome = outcome_claim})
 
-      finalizeAndWriteVsReplay(GAME.match.battleRoom, outcome_claim)
+      Replay.finalizeAndWriteVsReplay(GAME.match.battleRoom, outcome_claim, false, GAME.match, replay)
     
       if GAME.battleRoom.spectating then
         -- next_func, text, winnerSFX, timemax, keepMusic, args
@@ -1534,10 +1462,10 @@ function main_local_vs()
 
   commonGameSetup()
 
-  replay = createNewReplay(GAME.match)
+  replay = Replay.createNewReplay(GAME.match)
   
   local function update() 
-    assert((P1.CLOCK == P2.CLOCK), "should run at same speed: " .. P1.CLOCK .. " - " .. P2.CLOCK)
+    assert((P1.clock == P2.clock), "should run at same speed: " .. P1.clock .. " - " .. P2.clock)
   end
   
   local function variableStep() 
@@ -1559,15 +1487,18 @@ function main_local_vs()
   
   local function processGameResults(gameResult) 
 
-    assert((P1.CLOCK == P2.CLOCK), "should run at same speed: " .. P1.CLOCK .. " - " .. P2.CLOCK)
+    assert((P1.clock == P2.clock), "should run at same speed: " .. P1.clock .. " - " .. P2.clock)
 
     local matchOutcome = GAME.match.battleRoom:matchOutcome()
     if matchOutcome then
       local end_text = matchOutcome["end_text"]
       local winSFX = matchOutcome["winSFX"]
       local outcome_claim = matchOutcome["outcome_claim"]
-      
-      finalizeAndWriteVsReplay(GAME.match.battleRoom, outcome_claim)
+      if outcome_claim ~= 0 then
+        GAME.battleRoom.playerWinCounts[outcome_claim] = GAME.battleRoom.playerWinCounts[outcome_claim] + 1
+      end
+
+      Replay.finalizeAndWriteVsReplay(GAME.match.battleRoom, outcome_claim, false, GAME.match, replay)
 
       return {game_over_transition, 
           {select_screen.main, end_text, winSFX, nil, false, {select_screen, "2p_local_vs"}}
@@ -1593,7 +1524,7 @@ function main_local_vs_yourself()
 
   commonGameSetup()
 
-  replay = createNewReplay(GAME.match)
+  replay = Replay.createNewReplay(GAME.match)
   
   local function update() 
 
@@ -1604,6 +1535,13 @@ function main_local_vs_yourself()
   end
 
   local function abortGame() 
+
+    local challengeMode = GAME.battleRoom.trainingModeSettings and GAME.battleRoom.trainingModeSettings.challengeMode
+    if challengeMode then
+      local gameLength = GAME.match.P1.game_stopwatch
+      challengeMode:recordStageResult(-1, gameLength)
+    end
+
     return {main_dumb_transition, {
       select_screen.main, -- next_func
       "", -- text
@@ -1616,13 +1554,34 @@ function main_local_vs_yourself()
   end
   
   local function processGameResults(gameResult) 
-    if not GAME.battleRoom.trainingModeSettings  then
+    if not GAME.battleRoom.trainingModeSettings then
       GAME.scores:saveVsSelfScoreForLevel(P1.analytic.data.sent_garbage_lines, P1.level)
-      finalizeAndWriteVsReplay(nil, nil)
+      Replay.finalizeAndWriteVsReplay(nil, nil, false, GAME.match, replay)
     end
 
+    local transitionSoundEffect = themes[config.theme].sounds.game_over
+
+    if gameResult > 0 then
+      GAME.battleRoom.playerWinCounts[1] = GAME.battleRoom.playerWinCounts[1] + 1
+      transitionSoundEffect = P1:pick_win_sfx()
+    end
+    
+    local challengeMode = GAME.battleRoom.trainingModeSettings and GAME.battleRoom.trainingModeSettings.challengeMode
+    if challengeMode then
+      local gameLength = GAME.match.P1.game_stopwatch
+      challengeMode:recordStageResult(gameResult, gameLength)
+
+      -- If they beat all the stages, proceed to game end.
+      if challengeMode.nextStageIndex > #challengeMode.stages then
+        return {game_over_transition,
+          {main_select_mode, nil, transitionSoundEffect}
+        }
+      end
+    end
+
+    -- Go to select screen to try again
     return {game_over_transition,
-          {select_screen.main, nil, P1:pick_win_sfx(), nil, false, {select_screen, "1p_vs_yourself"}}
+          {select_screen.main, nil, transitionSoundEffect, nil, false, {select_screen, "1p_vs_yourself"}}
         }
   end
 
@@ -1634,9 +1593,9 @@ function main_replay()
 
   commonGameSetup()
 
-  Replay.loadFromFile(replay)
+  Replay.loadFromFile(replay, true)
 
-  local function update() 
+  local function update()
   end
 
   local frameAdvance = false
@@ -1677,13 +1636,13 @@ function main_replay()
       end
     end
 
-    if playbackSpeed == -1 then
-      if P1 and P1.CLOCK > 0 and P1.prev_states[P1.CLOCK-1] then
-        P1:rollbackToFrame(P1.CLOCK-1)
+    if playbackSpeed == -1 and not GAME.gameIsPaused then
+      if P1 and P1.clock > 0 and P1.prev_states[P1.clock-1] then
+        P1:rollbackToFrame(P1.clock-1)
         P1.lastRollbackFrame = -1 -- We don't want to count this as a "rollback" because we don't want to catchup
       end
-      if P2 and P2.CLOCK > 0 and P2.prev_states[P2.CLOCK-1] then
-        P2:rollbackToFrame(P2.CLOCK-1)
+      if P2 and P2.clock > 0 and P2.prev_states[P2.clock-1] then
+        P2:rollbackToFrame(P2.clock-1)
         P2.lastRollbackFrame = -1 -- We don't want to count this as a "rollback" because we don't want to catchup
       end
     end
@@ -1745,7 +1704,7 @@ function makeSelectPuzzleSetFunction(puzzleSet, awesome_idx)
     end
 
     GAME.match = Match("puzzle")
-    P1 = Stack{which=1, match=GAME.match, is_local=true, level=config.puzzle_level, character=character}
+    P1 = Stack{which=1, match=GAME.match, is_local=true, level=config.puzzle_level, character=character, inputMethod=config.inputMethod}
     GAME.match.P1 = P1
     P1:wait_for_random_character()
     if not character then
@@ -2086,7 +2045,7 @@ function game_over_transition(next_func, text, winnerSFX, timemax, keepMusic, ar
         GAME.match:run()
 
         if network_connected() then
-          do_messages() -- recieve messages so we know if the next game is in the queue
+          do_messages() -- receive messages so we know if the next game is in the queue
         end
 
         local left_select_menu = false -- Whether a message has been sent that indicates a match has started or the room has closed
@@ -2100,7 +2059,7 @@ function game_over_transition(next_func, text, winnerSFX, timemax, keepMusic, ar
         end
 
         -- if conditions are met, leave the game over screen
-        if t >= timemin and ((t >= timemax and timemax >= 0) or (menu_enter() or menu_escape())) or left_select_menu then
+        if t >= timemin and ((t >= timemax and timemax >= 0) or (menu_enter() or menu_escape() or love.mouse.isDown(1))) or left_select_menu then
           setMusicFadePercentage(1) -- reset the music back to normal config volume
           if not keepMusic then
             stop_the_music()
