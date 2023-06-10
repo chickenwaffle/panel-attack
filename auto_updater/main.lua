@@ -263,7 +263,7 @@ end
 local function tryMountGame(version)
   if love.filesystem.mount(GAME_UPDATER.path .. version, '') then
     GAME_UPDATER:change_version(version)
-    GAME_UPDATER_GAME_VERSION = "four-color" 
+    GAME_UPDATER_GAME_VERSION = "six-color" 
     --GAME_UPDATER_GAME_VERSION = version:gsub("^panel%-", ""):gsub("%.love", "")
     -- for logging
     gameStartVersion = version
