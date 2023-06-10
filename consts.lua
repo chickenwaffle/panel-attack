@@ -158,9 +158,9 @@ level_to_starting_speed        = {  1,  5,  9, 13, 17, 21, 25, 29, 27, 32, 45}
 -- How long you can spend at the top of the screen without dying, in frames ("Health").
 level_to_hang_time             = {121,101, 81, 66, 51, 41, 31, 21, 11,  1, 1}
 -- How many colors of panels can spawn in VS mode, not including metal panels.
-level_to_ncolors_vs            = {  5,  5,  5,  5,  5,  5,  5,  5,  6,  6, 6}
+level_to_ncolors_vs            = {  4,  4,  4,  4,  4,  4,  4,  4,  4,  4, 4}
 -- How many colors of panels can spawn in time trial mode.
-level_to_ncolors_time          = {  5,  5,  6,  6,  6,  6,  6,  6,  6,  6, 6}
+level_to_ncolors_time          = {  4,  4,  4,  4,  4,  4,  4,  4,  4,  4, 4}
 -- How long panels will hover if not supported by anything, in frames.
 level_to_hover                 = { 12, 12, 11, 10,  9,  6,  5,  4,  3,  6, 3}
 -- How long newly-transformed panels from garbage will hover before falling, in frames.
