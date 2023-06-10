@@ -5,7 +5,7 @@ love.pa_runInternal = DefaultLoveRunFunctions.innerRun
 love.run = DefaultLoveRunFunctions.run
 
 -- CONSTANTS
-local UPDATER_NAME = "four-color" -- you should name the distributed auto updater zip the same as this
+local UPDATER_NAME = "seven-color" -- you should name the distributed auto updater zip the same as this
 -- use a different name for the different versions of the updater
 -- ex: "panel" for the release, "panel-beta" for the main beta, "panel-exmode" for testing the EX Mode
 local MAX_REQ_SIZE = 100000 -- 100kB
@@ -263,7 +263,7 @@ end
 local function tryMountGame(version)
   if love.filesystem.mount(GAME_UPDATER.path .. version, '') then
     GAME_UPDATER:change_version(version)
-    GAME_UPDATER_GAME_VERSION = "six-color" 
+    GAME_UPDATER_GAME_VERSION = "seven-color" 
     --GAME_UPDATER_GAME_VERSION = version:gsub("^panel%-", ""):gsub("%.love", "")
     -- for logging
     gameStartVersion = version
