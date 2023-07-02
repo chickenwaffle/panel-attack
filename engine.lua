@@ -261,6 +261,11 @@ Stack =
 	        finish - clock time the chain finished
 	        size - the chain size 2, 3, etc
     ]]
+
+    s.chainlock = false
+    s.chainlockDuration = 300
+    s.chainlockTilFrame = nil
+
     s.currentChainStartFrame = nil -- The start frame of the current active chain or nil if no chain is active
 
     s.panelGenCount = 0
@@ -1300,6 +1305,23 @@ function Stack.shouldDropGarbage(self)
   end
 end
 
+function Stack.doChainlock(self)
+  -- Chainlock will lock the cursor, prevent manual raise, and disable swapping upon making a chain
+  if not self.chainlock then
+    self.chainlockTilFrame = self.game_stopwatch + self.chainlockDuration
+    self.chainlock = true
+  end
+
+  if self.game_stopwatch < self.chainlockTilFrame then
+    self.cursorLock = true
+    self.prevent_manual_raise = true
+  else
+    self.chainlock = false
+    self.cursorLock = nil
+    self.prevent_manual_raise = false
+  end
+end
+
 -- One run of the engine routine.
 function Stack.simulate(self)
   -- Don't run the main logic if the player has simulated past one of the game overs or the time attack time
@@ -1477,6 +1499,10 @@ function Stack.simulate(self)
       end
     -- if the stack is rise locked when you press the raise button,
     -- the raising is cancelled
+    end
+
+    if self.chain_counter == 2 or self.chainlock then
+      self:doChainlock()
     end
 
     -- if at the end of the routine there are no chain panels, the chain ends.
@@ -2047,6 +2073,12 @@ end
 
 -- returns true if the panel in row/column can be swapped with the panel to its right (column + 1)
 function Stack.canSwap(self, row, column)
+
+  -- Oops... shouldn't have chained!
+  if self.chainlock == true then
+    return false
+  end
+
   local panels = self.panels
   -- in order for a swap to occur, one of the two panels in
   -- the cursor must not be a non-panel.

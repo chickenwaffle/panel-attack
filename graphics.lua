@@ -968,7 +968,7 @@ function Stack.render_cursor(self)
   local scale_y = 24 / cursorImage:getHeight()
 
   local renderCursor = true
-  if self.countdown_timer then
+  if self.countdown_timer or self.cursorLock then
     if self.clock % 2 ~= 0 then
       renderCursor = false
     end
