@@ -5,7 +5,7 @@ love.pa_runInternal = DefaultLoveRunFunctions.innerRun
 love.run = DefaultLoveRunFunctions.run
 
 -- CONSTANTS
-local UPDATER_NAME = "chainlock" -- you should name the distributed auto updater zip the same as this
+local UPDATER_NAME = "chainlock-global-v2" -- you should name the distributed auto updater zip the same as this
 -- use a different name for the different versions of the updater
 -- ex: "panel" for the release, "panel-beta" for the main beta, "panel-exmode" for testing the EX Mode
 local MAX_REQ_SIZE = 100000 -- 100kB

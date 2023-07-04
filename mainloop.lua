@@ -221,7 +221,7 @@ do
       {loc("mm_1_vs"), main_local_vs_yourself_setup},
       {loc("mm_1_training"), training_setup},
       {loc("mm_1_challenge_mode"), challenge_mode_setup},
-      {"kornflakes' server", main_net_vs_setup, {"kornflakes.serveminecraft.net"}},
+      {loc("mm_2_vs_online", ""), main_net_vs_setup, {"18.188.43.50"}},
       {loc("mm_2_vs_local"), main_local_vs_setup},
       {loc("mm_replay_browser"), replay_browser.main},
       {loc("mm_configure"), main_config_input},
@@ -266,7 +266,7 @@ do
         infoYPosition = infoYPosition - fontHeight
       end
 
-        gprintf("PA Version: chainlock", -5, infoYPosition, canvas_width, "right")
+        gprintf("PA Version: chainlock-global-v2", -5, infoYPosition, canvas_width, "right")
         infoYPosition = infoYPosition - fontHeight
         if has_game_update then
           menu_draw(panels[config.panels].images.classic[1][1], 1262, 685)

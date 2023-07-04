@@ -227,4 +227,6 @@ for i=25,1000 do
   garbage_to_shake_time[i] = garbage_to_shake_time[i-1]
 end
 
+CHAINLOCK_DURATION = 300
+
 return consts

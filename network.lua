@@ -292,14 +292,18 @@ function Stack.send_controls(self)
   local playerNumber = self.which
   local to_send
   if self.inputMethod == "controller" then
-    to_send = base64encode[
-    (player_raise(playerNumber) and 32 or 0) + 
-    (player_swap(playerNumber) and 16 or 0) + 
-    (player_up(playerNumber) and 8 or 0) + 
-    (player_down(playerNumber) and 4 or 0) + 
-    (player_left(playerNumber) and 2 or 0) + 
-    (player_right(playerNumber) and 1 or 0) + 1
-    ]
+    if self.chainlock and playerNumber == 1 then
+      to_send = "A"
+    else
+      to_send = base64encode[
+      (player_raise(playerNumber) and 32 or 0) + 
+      (player_swap(playerNumber) and 16 or 0) + 
+      (player_up(playerNumber) and 8 or 0) + 
+      (player_down(playerNumber) and 4 or 0) + 
+      (player_left(playerNumber) and 2 or 0) + 
+      (player_right(playerNumber) and 1 or 0) + 1
+      ]
+    end
   elseif self.inputMethod == "touch" then
     to_send = self.touchInputController:encodedCharacterForCurrentTouchInput()
   end

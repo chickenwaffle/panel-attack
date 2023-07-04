@@ -262,9 +262,10 @@ Stack =
 	        size - the chain size 2, 3, etc
     ]]
 
+    -- Chainlock stuff
     s.chainlock = false
-    s.chainlockDuration = 300
-    s.chainlockTilFrame = nil
+    s.chainlockEndFrame = 0
+    s.chainlockPrevChainSize = 0
 
     s.currentChainStartFrame = nil -- The start frame of the current active chain or nil if no chain is active
 
@@ -1307,18 +1308,46 @@ end
 
 function Stack.doChainlock(self)
   -- Chainlock will lock the cursor, prevent manual raise, and disable swapping upon making a chain
-  if not self.chainlock then
-    self.chainlockTilFrame = self.game_stopwatch + self.chainlockDuration
+  -- The chainlock is restarted if the chain grows in size.
+  if not self.chainlock or self.chain_counter > self.chainlockPrevChainSize then
+    self.chainlockPrevChainSize = self.chain_counter
+    self.chainlockEndFrame = self.game_stopwatch + CHAINLOCK_DURATION
     self.chainlock = true
+    print("Chainlock: ", self.chainlock)
   end
 
-  if self.game_stopwatch < self.chainlockTilFrame then
+  -- Lock the cursor and prevent manual raise if the Chainlock is true
+  if self.game_stopwatch < self.chainlockEndFrame then
     self.cursorLock = true
-    self.prevent_manual_raise = true
+
+    -- Only lock player 1
+    if self.which == 1 then
+      self.prevent_manual_raise = true
+    end
+    print("Remaining frames: ", self.chainlockEndFrame - self.game_stopwatch)
   else
-    self.chainlock = false
     self.cursorLock = nil
-    self.prevent_manual_raise = false
+    if self.which == 1 then
+      self.prevent_manual_raise = false
+    end
+
+    self.chainlockPrevChainSize = 0
+    self.chainlock = false
+    print("Chainlock: ", self.chainlock)
+  end
+end
+
+function Stack.moveCursor(self, playMoveSounds)
+  local prev_row = self.cur_row
+  local prev_col = self.cur_col
+  self:moveCursorInDirection(self.cur_dir)
+  if (playMoveSounds and (self.cur_timer == 0 or self.cur_timer == self.cur_wait_time) and (self.cur_row ~= prev_row or self.cur_col ~= prev_col)) then
+    if self:shouldChangeSoundEffects() then
+      SFX_Cur_Move_Play = 1
+    end
+    if self.cur_timer ~= self.cur_wait_time then
+      self.analytic:register_move()
+    end
   end
 end
 
@@ -1429,17 +1458,11 @@ function Stack.simulate(self)
     if self.inputMethod == "touch" then
         --with touch, cursor movement happen at stack:control time
     else
-      if self.cur_dir and (self.cur_timer == 0 or self.cur_timer == self.cur_wait_time) and self.cursorLock == nil then
-        local prev_row = self.cur_row
-        local prev_col = self.cur_col
-        self:moveCursorInDirection(self.cur_dir)
-        if (playMoveSounds and (self.cur_timer == 0 or self.cur_timer == self.cur_wait_time) and (self.cur_row ~= prev_row or self.cur_col ~= prev_col)) then
-          if self:shouldChangeSoundEffects() then
-            SFX_Cur_Move_Play = 1
-          end
-          if self.cur_timer ~= self.cur_wait_time then
-            self.analytic:register_move()
-          end
+      if self.cur_dir and (self.cur_timer == 0 or self.cur_timer == self.cur_wait_time) then
+        if not self.chainlock then
+          self:moveCursor(playMoveSounds)
+        elseif self.chainlock and self.which == 2 then
+          self:moveCursor(playMoveSounds)
         end
       else
         self.cur_row = bound(1, self.cur_row, self.top_cur_row)
@@ -1501,7 +1524,7 @@ function Stack.simulate(self)
     -- the raising is cancelled
     end
 
-    if self.chain_counter == 2 or self.chainlock then
+    if self.chain_counter >= 2 or self.chainlock then
       self:doChainlock()
     end
 
@@ -2075,7 +2098,7 @@ end
 function Stack.canSwap(self, row, column)
 
   -- Oops... shouldn't have chained!
-  if self.chainlock == true then
+  if self.chainlock == true and self.which == 1 then
     return false
   end
 
