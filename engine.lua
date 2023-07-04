@@ -1313,7 +1313,7 @@ function Stack.doChainlock(self)
     self.chainlockPrevChainSize = self.chain_counter
     self.chainlockEndFrame = self.game_stopwatch + CHAINLOCK_DURATION
     self.chainlock = true
-    print("Chainlock: ", self.chainlock)
+    --print("Chainlock: ", self.chainlock)
   end
 
   -- Lock the cursor and prevent manual raise if the Chainlock is true
@@ -1324,7 +1324,7 @@ function Stack.doChainlock(self)
     if self.which == 1 then
       self.prevent_manual_raise = true
     end
-    print("Remaining frames: ", self.chainlockEndFrame - self.game_stopwatch)
+    --print("Remaining frames: ", self.chainlockEndFrame - self.game_stopwatch)
   else
     self.cursorLock = nil
     if self.which == 1 then
@@ -1333,7 +1333,7 @@ function Stack.doChainlock(self)
 
     self.chainlockPrevChainSize = 0
     self.chainlock = false
-    print("Chainlock: ", self.chainlock)
+    --print("Chainlock: ", self.chainlock)
   end
 end
 
