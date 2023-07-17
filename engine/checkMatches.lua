@@ -55,6 +55,10 @@ function Stack:checkMatches()
     return
   end
 
+  if self:chainfreeze() then
+    return
+  end
+
   local matchingPanels = self:getMatchingPanels()
   local comboSize = #matchingPanels
 
