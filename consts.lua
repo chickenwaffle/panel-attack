@@ -5,8 +5,17 @@ local consts = {}
 consts.FRAME_RATE = 1/60
 
 -- The values in this file are constants (except in this file perhaps) and are expected never to change during the game, not to be confused with globals!
-VERSION = "046"
 
+consts.ENGINE_VERSIONS = {}
+consts.ENGINE_VERSIONS.PRE_TELEGRAPH = "045"
+consts.ENGINE_VERSIONS.TELEGRAPH_COMPATIBLE = "046"
+consts.ENGINE_VERSIONS.TOUCH_COMPATIBLE = "047"
+
+VERSION = consts.ENGINE_VERSIONS.TOUCH_COMPATIBLE -- The current engine version
+VERSION_MIN_VIEW = consts.ENGINE_VERSIONS.TELEGRAPH_COMPATIBLE -- The lowest version number that can be watched
+
+consts.COUNTDOWN_CURSOR_SPEED = 4 --one move every this many frames
+consts.COUNTDOWN_LENGTH = 180 --3 seconds at 60 fps
 canvas_width = 1280
 canvas_height = 720
 
@@ -41,8 +50,8 @@ default_input_repeat_delay = 20
 large_font = 10 -- large font base+10
 small_font = -3 -- small font base-3
 
-key_names = {"up", "down", "left", "right", "swap1",
-  "swap2", "taunt_up", "taunt_down", "raise1", "raise2", "pause"}
+KEY_NAMES = {"up", "down", "left", "right", "swap1",  "swap2",  "taunt_up", "taunt_down", "raise1", "raise2", "pause"}
+KEYS      = {"up", "down", "left", "right", "z",      "x",      "y",        "u",          "c",      "v",      "p"}
 
 -- frames to use for bounce animation
 bounce_table = {1, 1, 1, 1,
@@ -110,7 +119,7 @@ stop_time_danger = {600, 420, 240, 180}
 difficulty_to_ncolors_endless = {8,8,8,8}
 difficulty_to_ncolors_1Ptime = {8,8,8,8}
 
-time_attack_time = 120
+TIME_ATTACK_TIME = 120
 -- Yes, 2 is slower than 1 and 50..99 are the same.
 speed_to_rise_time = table.map(
    {942, 983, 838, 790, 755, 695, 649, 604, 570, 515,
