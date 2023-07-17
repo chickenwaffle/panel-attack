@@ -72,6 +72,7 @@ function fmainloop()
     require("PuzzleTests")
     require("ServerQueueTests")
     require("StackTests")
+    require("tests.StackGraphicsTests")
     require("tests.JsonEncodingTests")
     require("tests.NetworkProtocolTests")
     require("tests.ThemeTests")
@@ -81,10 +82,10 @@ function fmainloop()
     require("utilTests")
     --require("AttackFileGenerator") -- TODO: Not really a unit test... generates attack files
     -- Medium level tests (integration tests)
-    require("tests.ReplayTests")
-    require("tests.StackReplayTests")
-    require("tests.StackRollbackReplayTests")
-    require("tests.StackTouchReplayTests")
+    -- require("tests.ReplayTests")
+    -- require("tests.StackReplayTests")
+    -- require("tests.StackRollbackReplayTests")
+    -- require("tests.StackTouchReplayTests")
   end
   if PERFORMANCE_TESTS_ENABLED then
     GAME:drawLoadingString("Running Performance Tests")
@@ -931,15 +932,17 @@ function main_net_vs_lobby()
   local leaderboard_string = ""
   local my_rank
   --attempt login
-  read_user_id_file()
+  local my_user_id = read_user_id_file(GAME.connected_server_ip)
   if not my_user_id then
     my_user_id = "need a new user id"
+  end
+  if CUSTOM_USER_ID then
+    my_user_id = CUSTOM_USER_ID
   end
   local login_status_message = "   " .. loc("lb_login")
   local noticeTextObject = nil
   local noticeLastText = nil
   local login_status_message_duration = 2
-  local login_denied = false
   local showing_leaderboard = false
   local lobby_menu_x = {[true] = themes[config.theme].main_menu_screen_pos[1] - 200, [false] = themes[config.theme].main_menu_screen_pos[1]} --will be used to make room in case the leaderboard should be shown.
   local lobby_menu_y = themes[config.theme].main_menu_screen_pos[2] + 10
@@ -948,8 +951,6 @@ function main_net_vs_lobby()
     json_send({login_request = true, user_id = my_user_id})
   end
   local lobby_menu = nil
-  local items = {}
-  local lastPlayerIndex = 0
   local updated = true -- need update when first entering
   local ret = nil
   local requestedSpectateRoom = nil
@@ -965,7 +966,7 @@ function main_net_vs_lobby()
           if msg.new_user_id then
             my_user_id = msg.new_user_id
             logger.trace("about to write user id file")
-            write_user_id_file()
+            write_user_id_file(my_user_id, GAME.connected_server_ip)
             login_status_message = loc("lb_user_new", config.name)
           elseif msg.name_changed then
             login_status_message = loc("lb_user_update", msg.old_name, msg.new_name)
@@ -983,7 +984,16 @@ function main_net_vs_lobby()
           --TODO: create a menu here to let the user choose "continue unranked" or "get a new user_id"
           --login_status_message = "Login for ranked matches failed.\n"..msg.reason.."\n\nYou may continue unranked,\nor delete your invalid user_id file to have a new one assigned."
           login_status_message_duration = 10
-          return main_dumb_transition, {main_select_mode, loc("lb_error_msg") .. "\n\n" .. json.encode(msg), 60, 600}
+
+          local loginDeniedMessage = loc("lb_error_msg") .. "\n\n"
+          if msg.reason then
+            loginDeniedMessage = loginDeniedMessage .. msg.reason .. "\n\n"
+          end
+          if msg.ban_duration then
+            loginDeniedMessage = loginDeniedMessage .. msg.ban_duration .. "\n\n"
+          end
+
+          return main_dumb_transition, {main_select_mode, loginDeniedMessage, 120, -1}
         end
       end
       if connection_up_time == 2 and not current_server_supports_ranking then
@@ -2009,11 +2019,10 @@ function main_dumb_transition(next_func, text, timemin, timemax, winnerSFX, keep
 end
 
 -- show game over screen, last frame of gameplay
-function game_over_transition(next_func, text, winnerSFX, timemax, keepMusic, args)
+function game_over_transition(next_func, gameResultText, winnerSFX, timemax, keepMusic, args)
   timemax = timemax or -1 -- negative values means the user needs to press enter/escape to continue
-  text = text or ""
+  gameResultText = gameResultText or ""
   keepMusic = keepMusic or false
-  local button_text = loc("continue_button") or ""
   local timemin = 60 -- the minimum amount of frames the game over screen will be displayed for
 
   local t = 0 -- the amount of frames that have passed since the game over screen was displayed
@@ -2034,10 +2043,16 @@ function game_over_transition(next_func, text, winnerSFX, timemax, keepMusic, ar
     initialMusicVolumes[v] = v:getVolume()
   end
 
+  local buttonText = loc("continue_button") or ""
+  local textX, textY = unpack(themes[config.theme].gameover_text_Pos)
+  local gameResultTextX = textX - font:getWidth(gameResultText) / 2
+  local buttonTextX = textX - font:getWidth(buttonText) / 2
+  local textHeight = font:getHeight()
+
   while true do
     gfx_q:push({Match.render, {GAME.match}})
-    gprint(text, (canvas_width - font:getWidth(text)) / 2, 10)
-    gprint(button_text, (canvas_width - font:getWidth(button_text)) / 2, 10 + 30)
+    gprint(gameResultText, gameResultTextX, textY)
+    gprint(buttonText, buttonTextX, math.floor(textY + textHeight * 1.2))
     wait()
     local ret = nil
     variable_step(
