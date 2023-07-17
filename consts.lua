@@ -205,8 +205,12 @@ for i=1,72 do
 end
 ]]--
 combo_garbage = {[4]={1}}
-for i=1,72 do
-  combo_garbage[i] = combo_garbage[i] or combo_garbage[i-1]
+for i=1,3 do
+  combo_garbage[i] = {}
+end
+
+for i=4,72 do
+  combo_garbage[i] = {1}
 end
 
 colors = {  red     = {220/255, 50/255,  47/255 },
