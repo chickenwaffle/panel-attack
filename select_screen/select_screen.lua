@@ -805,11 +805,9 @@ function select_screen.startNetPlayMatch(self, msg)
   GAME.match = Match("vs", GAME.battleRoom)
 
   GAME.match.seed = self:getSeed(msg)
-  if match_type == "Ranked" then
-    GAME.match.room_ratings = self.currentRoomRatings
-    GAME.match.my_player_number = self.my_player_number
-    GAME.match.op_player_number = self.op_player_number
-  end
+  GAME.match.room_ratings = self.currentRoomRatings
+  GAME.match.my_player_number = self.my_player_number
+  GAME.match.op_player_number = self.op_player_number
 
   local is_local = true
   if GAME.battleRoom.spectating then
@@ -906,9 +904,9 @@ function select_screen.start1pLocalMatch(self)
     local mirror = -1
     local simulatedOpponent = SimulatedOpponent(health, character, xPosition, yPosition, mirror)
     if challengeStage then
-      attackEngine = challengeStage:createAttackEngine(P1, simulatedOpponent, character)
+      attackEngine = challengeStage:createAttackEngine(P1, simulatedOpponent, character, true)
     else
-      attackEngine = AttackEngine.createEngineForTrainingModeSettings(GAME.battleRoom.trainingModeSettings.attackSettings, P1, simulatedOpponent, character)
+      attackEngine = AttackEngine.createEngineForTrainingModeSettings(GAME.battleRoom.trainingModeSettings.attackSettings, P1, simulatedOpponent, character, false)
     end
     simulatedOpponent:setAttackEngine(attackEngine)
 
