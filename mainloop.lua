@@ -222,7 +222,7 @@ do
       {loc("mm_1_vs"), main_local_vs_yourself_setup},
       {loc("mm_1_training"), training_setup},
       {loc("mm_1_challenge_mode"), challenge_mode_setup},
-      {"kornflakes' server", main_net_vs_setup, {"kornflakes.serveminecraft.net"}},
+      {"kornflakes' server", main_net_vs_setup, {"kornflak.es"}},
       {loc("mm_2_vs_local"), main_local_vs_setup},
       {loc("mm_replay_browser"), replay_browser.main},
       {loc("mm_configure"), main_config_input},
