@@ -221,8 +221,7 @@ do
       {loc("mm_1_vs"), main_local_vs_yourself_setup},
       {loc("mm_1_training"), training_setup},
       {loc("mm_1_challenge_mode"), challenge_mode_setup},
---      {loc("mm_2_vs_online", ""), main_net_vs_setup, {"18.188.43.50"}},
-      {loc("mm_2_vs_online_time_attack", ""), main_net_vs_setup, {"kornflakes.serveminecraft.net", 49569}},
+      {loc("mm_2_vs_online_time_attack", ""), main_net_vs_setup, {"kornflak.es", 49569}},
       {loc("mm_2_vs_local"), main_local_vs_setup},
       {loc("mm_replay_browser"), replay_browser.main},
       {loc("mm_configure"), main_config_input},
@@ -267,12 +266,10 @@ do
         infoYPosition = infoYPosition - fontHeight
       end
 
-      if GAME_UPDATER_GAME_VERSION then
-        gprintf("PA Version: " .. GAME_UPDATER_GAME_VERSION, -5, infoYPosition, canvas_width, "right")
-        infoYPosition = infoYPosition - fontHeight
-        if has_game_update then
-          menu_draw(panels[config.panels].images.classic[1][1], 1262, 685)
-        end
+      gprintf("PA Version: kornflakes-vsTimeAttack", -5, infoYPosition, canvas_width, "right")
+      infoYPosition = infoYPosition - fontHeight
+      if has_game_update then
+        menu_draw(panels[config.panels].images.classic[1][1], 1262, 685)
       end
 
       local runningFromAutoUpdater = GAME_UPDATER_GAME_VERSION ~= nil
