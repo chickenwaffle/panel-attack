@@ -53,15 +53,20 @@ function Game.errorData(errorString, traceBack)
   local buildVersion = GAME_UPDATER_GAME_VERSION or "Unknown"
   local systemInfo = system_info or "Unknown"
 
-  local errorData = { 
+  local errorData = {
       stack = traceBack,
       name = username,
       error = errorString,
       engine_version = VERSION,
       release_version = buildVersion,
       operating_system = systemInfo,
-      love_version = loveVersion
+      love_version = loveVersion,
+      theme = config.theme
     }
+
+  if GAME.match then
+    errorData.matchInfo = GAME.match:getInfo()
+  end
 
   return errorData
 end
@@ -74,12 +79,30 @@ function Game.detailedErrorLogString(errorData)
   local detailedErrorLogString = 
     "Stack Trace: " .. errorData.stack .. newLine ..
     "Username: " .. errorData.name .. newLine ..
+    "Theme: " .. errorData.theme .. newLine ..
     "Error Message: " .. errorData.error .. newLine ..
     "Engine Version: " .. errorData.engine_version .. newLine ..
     "Build Version: " .. errorData.release_version .. newLine ..
     "Operating System: " .. errorData.operating_system .. newLine ..
-    "Love Version: " .. errorData.love_version .. newLine .. 
+    "Love Version: " .. errorData.love_version .. newLine ..
     "UTC Time: " .. formattedTime
+
+    if errorData.matchInfo then
+      detailedErrorLogString = detailedErrorLogString .. newLine ..
+      errorData.matchInfo.mode .. " Match Info: " .. newLine ..
+      "  Stage: " .. errorData.matchInfo.stage .. newLine ..
+      "  Stacks: "
+      for i = 1, #errorData.matchInfo.stacks do
+        local stack = errorData.matchInfo.stacks[i]
+        detailedErrorLogString = detailedErrorLogString .. newLine ..
+        "    P" .. i .. ": " .. newLine ..
+        "      Player Number: " .. stack.playerNumber .. newLine ..
+        "      Character: " .. stack.character  .. newLine ..
+        "      Panels: " .. stack.panels  .. newLine ..
+        "      Rollback Count: " .. stack.rollbackCount .. newLine ..
+        "      Rollback Frames Saved: " .. stack.rollbackCopyCount
+      end
+    end
 
   return detailedErrorLogString
 end
@@ -93,6 +116,16 @@ function Game.loveVersionString()
   local major, minor, revision, codename = love.getVersion()
   loveVersionStringValue = string.format("%d.%d.%d", major, minor, revision)
   return loveVersionStringValue
+end
+
+-- Calculates the proper dimensions to not stretch the game for various sizes
+function scale_letterbox(width, height, w_ratio, h_ratio)
+  if height / h_ratio > width / w_ratio then
+    local scaled_height = h_ratio * width / w_ratio
+    return 0, (height - scaled_height) / 2, width, scaled_height
+  end
+  local scaled_width = w_ratio * height / h_ratio
+  return (width - scaled_width) / 2, 0, scaled_width, height
 end
 
 -- Updates the scale and position values to use up the right size of the window based on the user's settings.

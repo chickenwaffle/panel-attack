@@ -57,7 +57,7 @@ function GraphicsUtil.privateLoadImageWithExtensionAndScale(pathAndName, extensi
 end
 
 function GraphicsUtil.loadImageFromSupportedExtensions(pathAndName)
-  local supportedImageFormats = {".png", ".jpg"}
+  local supportedImageFormats = {".png", ".jpg", ".jpeg"}
   local supportedScales = {3, 2, 1}
   for _, extension in ipairs(supportedImageFormats) do
     for _, scale in ipairs(supportedScales) do
@@ -111,22 +111,6 @@ function draw(img, x, y, rot, x_scale, y_scale)
   else
     gfx_q:push({love.graphics.draw, {img, x*GFX_SCALE, y*GFX_SCALE,
     rot, x_scale*GFX_SCALE, y_scale*GFX_SCALE}})
-  end
-end
-
--- Draws a label image at the given spot.
--- TODO consolidate with above
-function draw_label(img, x, y, rot, scale, mirror)
-  rot = rot or 0
-  mirror = mirror or 0
-  if mirror ~= 0 then
-    x = x - math.floor((img:getWidth()/GFX_SCALE*scale)*mirror)
-  end
-  if GAME.isDrawing then
-    love.graphics.draw(img, x*GFX_SCALE, y*GFX_SCALE, rot, scale, scale)
-  else
-    gfx_q:push({love.graphics.draw, {img, x*GFX_SCALE, y*GFX_SCALE,
-    rot, scale, scale}})
   end
 end
 
