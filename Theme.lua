@@ -313,16 +313,18 @@ function Theme.graphics_init(self)
   self.images.IMG_cards = {}
   self.images.IMG_cards[true] = {}
   self.images.IMG_cards[false] = {}
-  for i = 4, 66 do
+  for i = 4, 72 do
     self.images.IMG_cards[false][i] = self:load_theme_img("combo/combo" .. tostring(math.floor(i / 10)) .. tostring(i % 10) .. "")
   end
   -- mystery chain
   self.images.IMG_cards[true][0] = self:load_theme_img("chain/chain00")
+  -- mystery combo
+  self.images.IMG_cards[false][0] = self:load_theme_img("combo/combo00")
   for i = 2, 13 do
     -- with backup from default theme
     self.images.IMG_cards[true][i] = self:load_theme_img("chain/chain" .. tostring(math.floor(i / 10)) .. tostring(i % 10) .. "")
   end
-  -- load as many more chain cards as there are available until 99, we will substitue in the mystery card if a card is missing
+  -- load as many more chain cards as there are available until 99, we will substitute in the mystery card if a card is missing
   self.chainCardLimit = 99
   for i = 14, 99 do
     -- without backup from default theme
@@ -551,7 +553,7 @@ function Theme:final_init()
   end
 
   self.images.bg_main = UpdatingImage(self:load_theme_img("background/main"), self.bg_main_is_tiled, self.bg_main_speed_x, self.bg_main_speed_y, canvas_width, canvas_height)
-  self.images.bg_select_screen = UpdatingImage(self:load_theme_img("background/select_screen"), self.bg_select_screen_is_tiled, self.bg_select_speed_x, self.bg_select_speed_y, canvas_width, canvas_height)
+  self.images.bg_select_screen = UpdatingImage(self:load_theme_img("background/select_screen"), self.bg_select_screen_is_tiled, self.bg_select_screen_speed_x, self.bg_select_screen_speed_y, canvas_width, canvas_height)
   self.images.bg_readme = UpdatingImage(self:load_theme_img("background/readme"), self.bg_readme_is_tiled, self.bg_readme_speed_x, self.bg_readme_speed_y, canvas_width, canvas_height)
 
   local menuYPadding = 10
@@ -572,6 +574,22 @@ end
 
 function Theme:offsetsAreFixed()
   return self.version >= self.VERSIONS.fixedOffsets
+end
+
+function Theme:chainImage(chainAmount)
+  local cardImage = self.images.IMG_cards[true][chainAmount]
+  if cardImage == nil then
+   cardImage = self.images.IMG_cards[true][0]
+  end
+  return cardImage
+end
+
+function Theme:comboImage(comboAmount)
+  local cardImage = self.images.IMG_cards[false][comboAmount]
+  if cardImage == nil then
+   cardImage = self.images.IMG_cards[false][0]
+  end
+  return cardImage
 end
 
 -- loads a theme into the game
