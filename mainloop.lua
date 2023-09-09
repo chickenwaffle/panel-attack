@@ -268,24 +268,7 @@ do
         infoYPosition = infoYPosition - fontHeight
       end
 
-      -- Uncomment to see level descriptions in the main menu
-      --[[
-      gprintf( "Level 1 =\t 4 colors, Level 10\n \
-Level 2 =\t 4 colors, Level 10 (no stop time)\n \
-Level 3 =\t 5 colors, Level 10\n \
-Level 4 =\t 5 colors, Level 10 (no stop time)\n \
-Level 5 =\t 6 colors, Level 8\n \
-Level 6 =\t 6 colors, Level 10\n \
-Level 7 =\t 6 colors, Level 10 (no stop time)\n \
-Level 8 =\t 7 colors, Level 8\n \
-Level 9 =\t 7 colors, Level 10\n \
-Level 10 =\t7 colors, Level 10 (no stop time)\n \
-Level 11 =\t8 colors, Level 10 (no stop time)", 5, infoYPosition-fontHeight*20, canvas_width, "left")
-      infoYPosition = infoYPosition - fontHeight
-       --]]
-
-
-      gprintf("PA Version: Tournament of Chaos", -5, infoYPosition, canvas_width, "right")
+      gprintf("PA Version: Tournament of Chaos version 9.5.2", -5, infoYPosition, canvas_width, "right")
       infoYPosition = infoYPosition - fontHeight
       if has_game_update then
         menu_draw(panels[config.panels].images.classic[1][1], 1262, 685)
