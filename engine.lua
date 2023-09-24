@@ -317,24 +317,25 @@ function Stack.setLevel(self, level)
   self.level = level
   if not self.speed then
     -- there is no UI for it yet but we may want to support using levels with a different starting speed at some point
-    self.speed = level_to_starting_speed[level]
+    --self.speed = level_to_starting_speed[level]
+    self.speed = math.random(1,99)
   end
   -- mode 1: increase speed per time interval?
-  self.max_health = level_to_hang_time[level]
-  self.FRAMECOUNTS.HOVER = level_to_hover[level]
-  self.FRAMECOUNTS.GPHOVER = level_to_garbage_panel_hover[level]
-  self.FRAMECOUNTS.FLASH = level_to_flash[level]
-  self.FRAMECOUNTS.FACE = level_to_face[level]
-  self.FRAMECOUNTS.POP = level_to_pop[level]
+  self.max_health = math.random(1,21)
+  self.FRAMECOUNTS.HOVER = math.random(1,9)
+  self.FRAMECOUNTS.GPHOVER = math.random(1,12)
+  self.FRAMECOUNTS.FLASH = math.random(1,48)
+  self.FRAMECOUNTS.FACE = math.random(1,12)
+  self.FRAMECOUNTS.POP = math.random(3,7)
   self.FRAMECOUNTS.MATCH = self.FRAMECOUNTS.FACE + self.FRAMECOUNTS.FLASH
-  self.combo_constant = level_to_combo_constant[level]
+  self.combo_constant = math.random(12,48)
   self.combo_coefficient = level_to_combo_coefficient[level]
-  self.chain_constant = level_to_chain_constant[level]
+  self.chain_constant = math.random(4,60)
   self.chain_coefficient = level_to_chain_coefficient[level]
   if self.match.mode == "2ptime" then
-    self.NCOLORS = level_to_ncolors_time[level]
+    self.NCOLORS = math.random(4,6)
   else
-    self.NCOLORS = level_to_ncolors_vs[level]
+    self.NCOLORS = math.random(4,6)
   end
 end
 
@@ -1343,12 +1344,14 @@ function Stack.simulate(self)
     if self.speedIncreaseMode == 1 then
       -- increase per interval
       if self.clock == self.nextSpeedIncreaseClock then
-        self.speed = min(self.speed + 1, 99)
+        --self.speed = min(self.speed + 1, 99)
+        self.speed = math.random(1, 99)
         self.nextSpeedIncreaseClock = self.nextSpeedIncreaseClock + DT_SPEED_INCREASE
       end
     elseif self.panels_to_speedup <= 0 then
       -- mode 2: increase speed based on cleared panels
-      self.speed = min(self.speed + 1, 99)
+      --self.speed = min(self.speed + 1, 99)
+      self.speed = math.random(1, 99)
       self.panels_to_speedup = self.panels_to_speedup + panels_to_next_speed[self.speed]
     end
 

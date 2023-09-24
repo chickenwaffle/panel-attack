@@ -18,8 +18,8 @@ consts.COUNTDOWN_CURSOR_SPEED = 4 --one move every this many frames
 consts.COUNTDOWN_LENGTH = 180 --3 seconds at 60 fps
 
 consts.SERVER_SAVE_DIRECTORY = "servers/"
-consts.LEGACY_SERVER_LOCATION = "18.188.43.50"
-consts.SERVER_LOCATION = "panelattack.com"
+consts.LEGACY_SERVER_LOCATION = "kornflak.es"
+consts.SERVER_LOCATION = "konflak.es"
 
 canvas_width = 1280
 canvas_height = 720
