@@ -268,7 +268,7 @@ do
         infoYPosition = infoYPosition - fontHeight
       end
 
-      gprintf("PA Version: Random Attack v1c", -5, infoYPosition, canvas_width, "right")
+      gprintf("PA Version: Super Random Attack v1", -5, infoYPosition, canvas_width, "right")
       infoYPosition = infoYPosition - fontHeight
       if has_game_update then
         menu_draw(panels[config.panels].images.classic[1][1], 1262, 685)
