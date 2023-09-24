@@ -318,24 +318,24 @@ function Stack.setLevel(self, level)
   if not self.speed then
     -- there is no UI for it yet but we may want to support using levels with a different starting speed at some point
     --self.speed = level_to_starting_speed[level]
-    self.speed = math.random(1,99)
+    self.speed = love.math.random(1,99)
   end
   -- mode 1: increase speed per time interval?
-  self.max_health = math.random(1,21)
-  self.FRAMECOUNTS.HOVER = math.random(1,9)
-  self.FRAMECOUNTS.GPHOVER = math.random(1,12)
-  self.FRAMECOUNTS.FLASH = math.random(1,48)
-  self.FRAMECOUNTS.FACE = math.random(1,12)
-  self.FRAMECOUNTS.POP = math.random(3,7)
+  self.max_health = love.math.random(1,21)
+  self.FRAMECOUNTS.HOVER = love.math.random(1,9)
+  self.FRAMECOUNTS.GPHOVER = love.math.random(1,12)
+  self.FRAMECOUNTS.FLASH = love.math.random(1,48)
+  self.FRAMECOUNTS.FACE = love.math.random(1,12)
+  self.FRAMECOUNTS.POP = love.math.random(3,7)
   self.FRAMECOUNTS.MATCH = self.FRAMECOUNTS.FACE + self.FRAMECOUNTS.FLASH
-  self.combo_constant = math.random(12,48)
+  self.combo_constant = love.math.random(12,48)
   self.combo_coefficient = level_to_combo_coefficient[level]
-  self.chain_constant = math.random(4,60)
+  self.chain_constant = love.math.random(4,60)
   self.chain_coefficient = level_to_chain_coefficient[level]
   if self.match.mode == "2ptime" then
-    self.NCOLORS = math.random(4,6)
+    self.NCOLORS = love.math.random(4,6)
   else
-    self.NCOLORS = math.random(4,6)
+    self.NCOLORS = love.math.random(4,6)
   end
 end
 
@@ -1345,13 +1345,13 @@ function Stack.simulate(self)
       -- increase per interval
       if self.clock == self.nextSpeedIncreaseClock then
         --self.speed = min(self.speed + 1, 99)
-        self.speed = math.random(1, 99)
+        self.speed = love.math.random(1, 99)
         self.nextSpeedIncreaseClock = self.nextSpeedIncreaseClock + DT_SPEED_INCREASE
       end
     elseif self.panels_to_speedup <= 0 then
       -- mode 2: increase speed based on cleared panels
       --self.speed = min(self.speed + 1, 99)
-      self.speed = math.random(1, 99)
+      self.speed = love.math.random(1, 99)
       self.panels_to_speedup = self.panels_to_speedup + panels_to_next_speed[self.speed]
     end
 
