@@ -1342,22 +1342,44 @@ function Stack.simulate(self)
 
     self:updateRiseLock()
 
-    -- Increase the speed if applicable
+    -- Increase the speed if applicable and subtract 1 hp from health
     if self.speedIncreaseMode == 1 then
       -- increase per interval
       if self.clock == self.nextSpeedIncreaseClock then
         --self.speed = min(self.speed + 1, 99)
+
         -- RANDOM ATTACK REQUIRES THIS SO BOTH CLIENTS LIKE EACH OTHER, SIMULATE RANDOM BY ADDING STOPWATCH TO SEED
         love.math.setRandomSeed(self.match.seed + self.game_stopwatch)
         self.speed = love.math.random(1,99)
+        self.max_health = bound(1, self.max_health - 1, self.max_health)
+        self.FRAMECOUNTS.HOVER = love.math.random(1,9)
+        self.FRAMECOUNTS.GPHOVER = love.math.random(1,12)
+        self.FRAMECOUNTS.FLASH = love.math.random(1,48)
+        self.FRAMECOUNTS.FACE = love.math.random(1,12)
+        self.FRAMECOUNTS.POP = love.math.random(3,7)
+        self.FRAMECOUNTS.MATCH = self.FRAMECOUNTS.FACE + self.FRAMECOUNTS.FLASH
+        self.combo_constant = love.math.random(12,48)
+        self.chain_constant = love.math.random(4,60)
+
         self.nextSpeedIncreaseClock = self.nextSpeedIncreaseClock + DT_SPEED_INCREASE
       end
     elseif self.panels_to_speedup <= 0 then
       -- mode 2: increase speed based on cleared panels
       --self.speed = min(self.speed + 1, 99)
+
       -- RANDOM ATTACK REQUIRES THIS SO BOTH CLIENTS LIKE EACH OTHER, SIMULATE RANDOM BY ADDING STOPWATCH TO SEED
       love.math.setRandomSeed(self.match.seed + self.game_stopwatch)
       self.speed = love.math.random(1,99)
+      self.max_health = bound(1, self.max_health - 1, self.max_health)
+      self.FRAMECOUNTS.HOVER = love.math.random(1,9)
+      self.FRAMECOUNTS.GPHOVER = love.math.random(1,12)
+      self.FRAMECOUNTS.FLASH = love.math.random(1,48)
+      self.FRAMECOUNTS.FACE = love.math.random(1,12)
+      self.FRAMECOUNTS.POP = love.math.random(3,7)
+      self.FRAMECOUNTS.MATCH = self.FRAMECOUNTS.FACE + self.FRAMECOUNTS.FLASH
+      self.combo_constant = love.math.random(12,48)
+      self.chain_constant = love.math.random(4,60)
+
       self.panels_to_speedup = self.panels_to_speedup + panels_to_next_speed[self.speed]
     end
 
