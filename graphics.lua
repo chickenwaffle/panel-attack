@@ -446,15 +446,17 @@ function Stack:drawDebug()
   end
 
   --TODO: Add color to debug gprints to indicate how screwed up the values are
-  gprint("health: " .. self.max_health, x, y + 255)
-  gprint("hover: " .. self.FRAMECOUNTS.HOVER, x, y + 270)
-  gprint("gphover: " .. self.FRAMECOUNTS.GPHOVER, x, y + 285)
-  gprint("flash: " .. self.FRAMECOUNTS.FLASH, x, y + 300)
-  gprint("face: " .. self.FRAMECOUNTS.FACE, x, y + 315)
-  gprint("pop: " .. self.FRAMECOUNTS.POP, x, y + 330)
-  gprint("match: " .. self.FRAMECOUNTS.MATCH, x, y + 345)
-  gprint("combo_co: " .. self.combo_constant, x, y + 360)
-  gprint("chain_co: " .. self.chain_constant, x, y + 375)
+  if self.which == 1 then
+    gprint("health: " .. self.max_health, x, y + 255)
+    gprint("hover: " .. self.FRAMECOUNTS.HOVER, x, y + 270)
+    gprint("gphover: " .. self.FRAMECOUNTS.GPHOVER, x, y + 285)
+    gprint("flash: " .. self.FRAMECOUNTS.FLASH, x, y + 300)
+    gprint("face: " .. self.FRAMECOUNTS.FACE, x, y + 315)
+    gprint("pop: " .. self.FRAMECOUNTS.POP, x, y + 330)
+    gprint("match: " .. self.FRAMECOUNTS.MATCH, x, y + 345)
+    gprint("combo_co: " .. self.combo_constant, x, y + 360)
+    gprint("chain_co: " .. self.chain_constant, x, y + 375)
+  end
 end
 
 -- Renders the player's stack on screen

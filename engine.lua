@@ -314,6 +314,8 @@ function Stack:createCursors()
 end
 
 function Stack.setLevel(self, level)
+  -- RANDOM ATTACK REQUIRES THIS SO BOTH CLIENTS LIKE EACH OTHER
+  love.math.setRandomSeed(self.match.seed)
   self.level = level
   if not self.speed then
     -- there is no UI for it yet but we may want to support using levels with a different starting speed at some point
@@ -1345,13 +1347,17 @@ function Stack.simulate(self)
       -- increase per interval
       if self.clock == self.nextSpeedIncreaseClock then
         --self.speed = min(self.speed + 1, 99)
-        self.speed = love.math.random(1, 99)
+        -- RANDOM ATTACK REQUIRES THIS SO BOTH CLIENTS LIKE EACH OTHER, SIMULATE RANDOM BY ADDING STOPWATCH TO SEED
+        love.math.setRandomSeed(self.match.seed + self.game_stopwatch)
+        self.speed = love.math.random(1,99)
         self.nextSpeedIncreaseClock = self.nextSpeedIncreaseClock + DT_SPEED_INCREASE
       end
     elseif self.panels_to_speedup <= 0 then
       -- mode 2: increase speed based on cleared panels
       --self.speed = min(self.speed + 1, 99)
-      self.speed = love.math.random(1, 99)
+      -- RANDOM ATTACK REQUIRES THIS SO BOTH CLIENTS LIKE EACH OTHER, SIMULATE RANDOM BY ADDING STOPWATCH TO SEED
+      love.math.setRandomSeed(self.match.seed + self.game_stopwatch)
+      self.speed = love.math.random(1,99)
       self.panels_to_speedup = self.panels_to_speedup + panels_to_next_speed[self.speed]
     end
 
