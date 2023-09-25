@@ -324,15 +324,15 @@ function Stack.setLevel(self, level)
   end
   -- mode 1: increase speed per time interval?
   self.max_health = love.math.random(1,21)
-  self.FRAMECOUNTS.HOVER = love.math.random(1,9)
-  self.FRAMECOUNTS.GPHOVER = love.math.random(1,12)
-  self.FRAMECOUNTS.FLASH = love.math.random(1,48)
-  self.FRAMECOUNTS.FACE = love.math.random(1,12)
-  self.FRAMECOUNTS.POP = love.math.random(3,7)
+  self.FRAMECOUNTS.HOVER = love.math.random(RANDOM_HOVER[1], RANDOM_HOVER[2])
+  self.FRAMECOUNTS.GPHOVER = love.math.random(RANDOM_GPHOVER[1], RANDOM_GPHOVER[2])
+  self.FRAMECOUNTS.FLASH = love.math.random(RANDOM_FLASH[1], RANDOM_FLASH[2])
+  self.FRAMECOUNTS.FACE = love.math.random(RANDOM_FACE[1], RANDOM_FACE[2])
+  self.FRAMECOUNTS.POP = love.math.random(RANDOM_POP[1], RANDOM_POP[2])
   self.FRAMECOUNTS.MATCH = self.FRAMECOUNTS.FACE + self.FRAMECOUNTS.FLASH
-  self.combo_constant = love.math.random(12,48)
+  self.combo_constant = love.math.random(RANDOM_COMBO_CONSTANT[1], RANDOM_COMBO_CONSTANT[2])
   self.combo_coefficient = level_to_combo_coefficient[level]
-  self.chain_constant = love.math.random(4,60)
+  self.chain_constant = love.math.random(RANDOM_CHAIN_CONSTANT[1], RANDOM_CHAIN_CONSTANT[2])
   self.chain_coefficient = level_to_chain_coefficient[level]
   if self.match.mode == "2ptime" then
     self.NCOLORS = love.math.random(4,6)
@@ -1346,39 +1346,37 @@ function Stack.simulate(self)
     if self.speedIncreaseMode == 1 then
       -- increase per interval
       if self.clock == self.nextSpeedIncreaseClock then
-        --self.speed = min(self.speed + 1, 99)
 
         -- RANDOM ATTACK REQUIRES THIS SO BOTH CLIENTS LIKE EACH OTHER, SIMULATE RANDOM BY ADDING STOPWATCH TO SEED
         love.math.setRandomSeed(self.match.seed + self.game_stopwatch)
         self.speed = love.math.random(1,99)
         self.max_health = bound(1, self.max_health - 1, self.max_health)
-        self.FRAMECOUNTS.HOVER = love.math.random(1,9)
-        self.FRAMECOUNTS.GPHOVER = love.math.random(1,12)
-        self.FRAMECOUNTS.FLASH = love.math.random(1,48)
-        self.FRAMECOUNTS.FACE = love.math.random(1,12)
-        self.FRAMECOUNTS.POP = love.math.random(3,7)
+        self.FRAMECOUNTS.HOVER = love.math.random(RANDOM_HOVER[1], RANDOM_HOVER[2])
+        self.FRAMECOUNTS.GPHOVER = love.math.random(RANDOM_GPHOVER[1], RANDOM_GPHOVER[2])
+        self.FRAMECOUNTS.FLASH = love.math.random(RANDOM_FLASH[1], RANDOM_FLASH[2])
+        self.FRAMECOUNTS.FACE = love.math.random(RANDOM_FACE[1], RANDOM_FACE[2])
+        self.FRAMECOUNTS.POP = love.math.random(RANDOM_POP[1], RANDOM_POP[2])
         self.FRAMECOUNTS.MATCH = self.FRAMECOUNTS.FACE + self.FRAMECOUNTS.FLASH
-        self.combo_constant = love.math.random(12,48)
-        self.chain_constant = love.math.random(4,60)
+        self.combo_constant = love.math.random(RANDOM_COMBO_CONSTANT[1], RANDOM_COMBO_CONSTANT[2])
+        self.chain_constant = love.math.random(RANDOM_CHAIN_CONSTANT[1], RANDOM_CHAIN_CONSTANT[2])
 
         self.nextSpeedIncreaseClock = self.nextSpeedIncreaseClock + DT_SPEED_INCREASE
       end
     elseif self.panels_to_speedup <= 0 then
       -- mode 2: increase speed based on cleared panels
-      --self.speed = min(self.speed + 1, 99)
 
       -- RANDOM ATTACK REQUIRES THIS SO BOTH CLIENTS LIKE EACH OTHER, SIMULATE RANDOM BY ADDING STOPWATCH TO SEED
       love.math.setRandomSeed(self.match.seed + self.game_stopwatch)
       self.speed = love.math.random(1,99)
       self.max_health = bound(1, self.max_health - 1, self.max_health)
-      self.FRAMECOUNTS.HOVER = love.math.random(1,9)
-      self.FRAMECOUNTS.GPHOVER = love.math.random(1,12)
-      self.FRAMECOUNTS.FLASH = love.math.random(1,48)
-      self.FRAMECOUNTS.FACE = love.math.random(1,12)
-      self.FRAMECOUNTS.POP = love.math.random(3,7)
+      self.FRAMECOUNTS.HOVER = love.math.random(RANDOM_HOVER[1], RANDOM_HOVER[2])
+      self.FRAMECOUNTS.GPHOVER = love.math.random(RANDOM_GPHOVER[1], RANDOM_GPHOVER[2])
+      self.FRAMECOUNTS.FLASH = love.math.random(RANDOM_FLASH[1], RANDOM_FLASH[2])
+      self.FRAMECOUNTS.FACE = love.math.random(RANDOM_FACE[1], RANDOM_FACE[2])
+      self.FRAMECOUNTS.POP = love.math.random(RANDOM_POP[1], RANDOM_POP[2])
       self.FRAMECOUNTS.MATCH = self.FRAMECOUNTS.FACE + self.FRAMECOUNTS.FLASH
-      self.combo_constant = love.math.random(12,48)
-      self.chain_constant = love.math.random(4,60)
+      self.combo_constant = love.math.random(RANDOM_COMBO_CONSTANT[1], RANDOM_COMBO_CONSTANT[2])
+      self.chain_constant = love.math.random(RANDOM_CHAIN_CONSTANT[1], RANDOM_CHAIN_CONSTANT[2])
 
       self.panels_to_speedup = self.panels_to_speedup + panels_to_next_speed[self.speed]
     end

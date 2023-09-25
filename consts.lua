@@ -21,6 +21,20 @@ consts.SERVER_SAVE_DIRECTORY = "servers/"
 consts.LEGACY_SERVER_LOCATION = "kornflak.es"
 consts.SERVER_LOCATION = "konflak.es"
 
+-- RANDOM FRAMETIMES  min.  max
+--                    [1]   [2]
+RANDOM_SPEED =        {1,   99}
+RANDOM_MAX_HEALTH =   {1,   21}
+RANDOM_HOVER =        {1,    9}
+RANDOM_GPHOVER =      {1,   12}
+RANDOM_FLASH =        {1,   48}
+RANDOM_FACE =         {1,   12}
+RANDOM_POP =          {3,    7}
+
+-- Combo and chain stoptime constants
+RANDOM_COMBO_CONSTANT =     {12,  48}
+RANDOM_CHAIN_CONSTANT =     {4,   60}
+
 canvas_width = 1280
 canvas_height = 720
 

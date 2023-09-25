@@ -476,4 +476,39 @@ function reset_filters()
   GAME.foreground_overlay = nil
 end
 
+function interpolateColor(value, minvalue, maxvalue, lowerIsBetter)
+    if value == minvalue then
+      return {1, 0, 0, 1}
+    elseif value == maxvalue then
+      return {0, 1, 0, 1}
+    end
+
+    local median = (maxvalue + minvalue) / 2
+    
+    if value == median then
+      return {1, 1, 1, 1}
+    end
+
+    -- Define the RGB components for red, white, and green
+    local red = {1, 0, 0}
+    local white = {1, 1, 1}
+    local green = {0, 1, 0}
+
+    local r, g, b
+    if value <= median then
+        local t = value / median
+        r = red[1] + (white[1] - red[1]) * t
+        g = red[2] + (white[2] - red[2]) * t
+        b = red[3] + (white[3] - red[3]) * t
+    else
+        local t = (value - median) / median
+        r = white[1] + (green[1] - white[1]) * t
+        g = white[2] + (green[2] - white[2]) * t
+        b = white[3] + (green[3] - white[3]) * t
+    end
+
+    -- Return the interpolated color as a table of RGB values
+    return {r, g, b, 1}
+end
+
 return GraphicsUtil
