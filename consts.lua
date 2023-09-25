@@ -21,6 +21,10 @@ consts.SERVER_SAVE_DIRECTORY = "servers/"
 consts.LEGACY_SERVER_LOCATION = "kornflak.es"
 consts.SERVER_LOCATION = "konflak.es"
 
+-- Bad RNG ignores the constants below and RNGs the
+--  following values at the beginning of a match and
+--  when the game attempts to increase speed:
+--
 -- RANDOM FRAMETIMES  min.  max
 --                    [1]   [2]
 RANDOM_SPEED =        {1,   99}

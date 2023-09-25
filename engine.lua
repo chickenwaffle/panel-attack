@@ -1360,6 +1360,8 @@ function Stack.simulate(self)
         self.combo_constant = love.math.random(RANDOM_COMBO_CONSTANT[1], RANDOM_COMBO_CONSTANT[2])
         self.chain_constant = love.math.random(RANDOM_CHAIN_CONSTANT[1], RANDOM_CHAIN_CONSTANT[2])
 
+        SFX_Countdown_Play = 1
+
         self.nextSpeedIncreaseClock = self.nextSpeedIncreaseClock + DT_SPEED_INCREASE
       end
     elseif self.panels_to_speedup <= 0 then
@@ -1377,6 +1379,8 @@ function Stack.simulate(self)
       self.FRAMECOUNTS.MATCH = self.FRAMECOUNTS.FACE + self.FRAMECOUNTS.FLASH
       self.combo_constant = love.math.random(RANDOM_COMBO_CONSTANT[1], RANDOM_COMBO_CONSTANT[2])
       self.chain_constant = love.math.random(RANDOM_CHAIN_CONSTANT[1], RANDOM_CHAIN_CONSTANT[2])
+
+      SFX_Countdown_Play = 1
 
       self.panels_to_speedup = self.panels_to_speedup + panels_to_next_speed[self.speed]
     end

@@ -445,17 +445,26 @@ function Stack:drawDebug()
     gprint(inputs_to_print, x, y + 195)
   end
 
-  --TODO: Add color to these gprints to indicate how screwed up the values are
+  local xoff = -1105
+  local yoff = 300
   if self.which == 1 then
-    gprint("max hp:"    .. self.max_health,           x, y + 255, {interpolateColor(self.max_health, RANDOM_MAX_HEALTH[1], RANDOM_MAX_HEALTH[2], false)})
-    gprint("hover: "    .. self.FRAMECOUNTS.HOVER,    x, y + 270, {interpolateColor(self.FRAMECOUNTS.HOVER, RANDOM_HOVER[1], RANDOM_HOVER[2], false)})
-    gprint("gphover: "  .. self.FRAMECOUNTS.GPHOVER,  x, y + 285, {interpolateColor(self.FRAMECOUNTS.GPHOVER, RANDOM_GPHOVER[1], RANDOM_GPHOVER[2], false)})
-    gprint("flash: "    .. self.FRAMECOUNTS.FLASH,    x, y + 300, {interpolateColor(self.FRAMECOUNTS.FLASH, RANDOM_FLASH[1], RANDOM_FLASH[2], false)})
-    gprint("face: "     .. self.FRAMECOUNTS.FACE,     x, y + 315, {interpolateColor(self.FRAMECOUNTS.FACE, RANDOM_FACE[1], RANDOM_FACE[2], false)})
-    gprint("pop: "      .. self.FRAMECOUNTS.POP,      x, y + 330, {interpolateColor(self.FRAMECOUNTS.POP, RANDOM_POP[1], RANDOM_POP[2], false)})
-    gprint("match: "    .. self.FRAMECOUNTS.MATCH,    x, y + 345)
-    gprint("combo_st: " .. self.combo_constant,       x, y + 360, {interpolateColor(self.combo_constant, RANDOM_COMBO_CONSTANT[1], RANDOM_COMBO_CONSTANT[2], false)})
-    gprint("chain_st: " .. self.chain_constant,       x, y + 375, {interpolateColor(self.chain_constant, RANDOM_CHAIN_CONSTANT[1], RANDOM_CHAIN_CONSTANT[2], false)})
+    gprintf("max hp:"    .. self.max_health,           x + xoff, y + yoff, canvas_width, "right", {interpolateColor(self.max_health, RANDOM_MAX_HEALTH[1], RANDOM_MAX_HEALTH[2], false)})
+    yoff = yoff + 15
+    gprintf("hover: "    .. self.FRAMECOUNTS.HOVER,    x + xoff, y + yoff, canvas_width, "right", {interpolateColor(self.FRAMECOUNTS.HOVER, RANDOM_HOVER[1], RANDOM_HOVER[2], false)})
+    yoff = yoff + 15
+    gprintf("gphover: "  .. self.FRAMECOUNTS.GPHOVER,  x + xoff, y + yoff, canvas_width, "right", {interpolateColor(self.FRAMECOUNTS.GPHOVER, RANDOM_GPHOVER[1], RANDOM_GPHOVER[2], false)})
+    yoff = yoff + 15
+    gprintf("flash: "    .. self.FRAMECOUNTS.FLASH,    x + xoff, y + yoff, canvas_width, "right", {interpolateColor(self.FRAMECOUNTS.FLASH, RANDOM_FLASH[1], RANDOM_FLASH[2], false)})
+    yoff = yoff + 15
+    gprintf("face: "     .. self.FRAMECOUNTS.FACE,     x + xoff, y + yoff, canvas_width, "right", {interpolateColor(self.FRAMECOUNTS.FACE, RANDOM_FACE[1], RANDOM_FACE[2], false)})
+    yoff = yoff + 15
+    gprintf("pop: "      .. self.FRAMECOUNTS.POP,      x + xoff, y + yoff, canvas_width, "right", {interpolateColor(self.FRAMECOUNTS.POP, RANDOM_POP[1], RANDOM_POP[2], false)})
+    yoff = yoff + 15
+    gprintf("match: "    .. self.FRAMECOUNTS.MATCH,    x + xoff, y + yoff, canvas_width, "right")
+    yoff = yoff + 15
+    gprintf("combo_st: " .. self.combo_constant,       x + xoff, y + yoff, canvas_width, "right", {interpolateColor(self.combo_constant, RANDOM_COMBO_CONSTANT[1], RANDOM_COMBO_CONSTANT[2], false)})
+    yoff = yoff + 15
+    gprintf("chain_st: " .. self.chain_constant,       x + xoff, y + yoff, canvas_width, "right", {interpolateColor(self.chain_constant, RANDOM_CHAIN_CONSTANT[1], RANDOM_CHAIN_CONSTANT[2], false)})
   end
 end
 
