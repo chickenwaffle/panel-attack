@@ -19,7 +19,7 @@ consts.COUNTDOWN_LENGTH = 180 --3 seconds at 60 fps
 
 consts.SERVER_SAVE_DIRECTORY = "servers/"
 consts.LEGACY_SERVER_LOCATION = "kornflak.es"
-consts.SERVER_LOCATION = "konflak.es"
+consts.SERVER_LOCATION = "kornflak.es"
 
 -- Bad RNG ignores the constants below and RNGs the
 --  following values at the beginning of a match and
