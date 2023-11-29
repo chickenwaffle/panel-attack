@@ -2424,9 +2424,12 @@ function Stack.onPop(self, panel)
     self.score = self.score + 10
 
     self.panels_cleared = self.panels_cleared + 1
+    -- Do not spawn metal panels
+    --[[
     if self.match.mode == "vs" and self.panels_cleared % level_to_metal_panel_frequency[self.level] == 0 then
       self.metal_panels_queued = min(self.metal_panels_queued + 1, level_to_metal_panel_cap[self.level])
     end
+    ]]
     if self:shouldChangeSoundEffects() then
       SFX_Pop_Play = 1
     end

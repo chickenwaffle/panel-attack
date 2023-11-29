@@ -415,7 +415,8 @@ function Stack:recordChainHistory()
 end
 
 function Stack:awardStopTime(isChain, comboSize)
-  if comboSize > 3 or isChain then
+  --[[
+    if comboSize > 3 or isChain then
     local stopTime
     if self.panels_in_top_row and isChain then
       if self.level then
@@ -447,6 +448,9 @@ function Stack:awardStopTime(isChain, comboSize)
     end
     self.stop_time = math.max(self.stop_time, stopTime)
   end
+  ]]
+  self.stop_time = 12
+  -- lol
 end
 
 function Stack:queueAttackSoundEffect(isChainLink, chainSize, comboSize, metalCount)
