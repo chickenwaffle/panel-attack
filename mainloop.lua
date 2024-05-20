@@ -220,7 +220,7 @@ do
       {loc("mm_1_time"), main_timeattack_select},
       {loc("mm_1_vs"), main_local_vs_yourself_setup},
       {loc("mm_1_training"), training_setup},
-      {"kornflakes' server", main_net_vs_setup, {"kornflakes.serveminecraft.net", 49569}},
+      {"kornflakes' server", main_net_vs_setup, {"kornflak.es", 49569}},
       {loc("mm_2_vs_local"), main_local_vs_setup},
       {loc("mm_replay_browser"), replay_browser.main},
       {loc("mm_configure"), main_config_input},
@@ -265,12 +265,10 @@ do
         infoYPosition = infoYPosition - fontHeight
       end
 
-      if GAME_UPDATER_GAME_VERSION then
-        gprintf("PA Version: " .. GAME_UPDATER_GAME_VERSION, -5, infoYPosition, canvas_width, "right")
-        infoYPosition = infoYPosition - fontHeight
-        if has_game_update then
-          menu_draw(panels[config.panels].images.classic[1][1], 1262, 685)
-        end
+      gprintf("PA Version: Super Troll Build v2", -5, infoYPosition, canvas_width, "right")
+      infoYPosition = infoYPosition - fontHeight
+      if has_game_update then
+        menu_draw(panels[config.panels].images.classic[1][1], 1262, 685)
       end
 
       local runningFromAutoUpdater = GAME_UPDATER_GAME_VERSION ~= nil
