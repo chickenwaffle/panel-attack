@@ -152,33 +152,33 @@ panels_to_next_speed =
   45, 45, 45, 45, 45, 45, 45, 45, math.huge}
 
 -- What speed level you start on.
-level_to_starting_speed        = {  1,  5,  9, 13, 17, 21, 25, 29, 27, 32, 45}
+level_to_starting_speed        = {  1,  5,  9, 13, 17, 21, 25, 29, 27, 45, 45}
 -- How long you can spend at the top of the screen without dying, in frames ("Health").
 level_to_hang_time             = {121,101, 81, 66, 51, 41, 31, 21, 11,  1, 1}
 -- How many colors of panels can spawn in VS mode, not including metal panels.
-level_to_ncolors_vs            = {  5,  5,  5,  5,  5,  5,  5,  5,  6,  6, 6}
+level_to_ncolors_vs            = {  5,  5,  5,  5,  5,  5,  5,  5,  6,  7, 7}
 -- How many colors of panels can spawn in time trial mode.
-level_to_ncolors_time          = {  5,  5,  6,  6,  6,  6,  6,  6,  6,  6, 6}
+level_to_ncolors_time          = {  5,  5,  6,  6,  6,  6,  6,  6,  6,  7, 7}
 -- How long panels will hover if not supported by anything, in frames.
-level_to_hover                 = { 12, 12, 11, 10,  9,  6,  5,  4,  3,  6, 3}
+level_to_hover                 = { 12, 12, 11, 10,  9,  6,  5,  4,  3,  3, 3}
 -- How long newly-transformed panels from garbage will hover before falling, in frames.
-level_to_garbage_panel_hover   = { 41, 36, 31, 26, 21, 16, 13, 10,  7,  4, 3}
+level_to_garbage_panel_hover   = { 41, 36, 31, 26, 21, 16, 13, 10,  7,  3, 3}
 -- How long panels flash for before popping, in frames.
-level_to_flash                 = { 44, 44, 42, 42, 38, 36, 34, 32, 30, 28, 22}
+level_to_flash                 = { 44, 44, 42, 42, 38, 36, 34, 32, 30, 22, 15}
 -- How long panels remain in their "face" frame before popping, in frames.
 -- (They actually stay in their face frame for five frames longer than the numbers in this table for some reason...
 --  This makes timings accurate with Tetris Attack / Panel de Pon SFC.)
-level_to_face                  = { 20, 18, 17, 16, 15, 14, 13, 12, 11, 10, 8}
+level_to_face                  = { 20, 18, 17, 16, 15, 14, 13, 12, 11, 8, 5}
 -- How long panels take to pop after finishing their "face" frame, in frames.
-level_to_pop                   = {  9,  9,  8,  8,  8,  8,  8,  7,  7,  7, 6}
+level_to_pop                   = {  9,  9,  8,  8,  8,  8,  8,  7,  7,  4, 3}
 -- How long the stack stops when you clear combos, in frames.
-level_to_combo_constant        = {-20,-16,-12, -8, -3,  2,  7, 12, 17, 22, 27}
-level_to_combo_coefficient     = { 20, 18, 16, 14, 12, 10,  8,  6,  4,  2, 1}
+level_to_combo_constant        = {-20,-16,-12, -8, -3,  2,  7, 12, 17, 20, 20}
+level_to_combo_coefficient     = { 20, 18, 16, 14, 12, 10,  8,  6,  4,  1, 1}
 -- How long the stack stops when you clear chains, in frames.
-level_to_chain_constant        = { 80, 77, 74, 71, 68, 65, 62, 60, 58, 56, 53}
-level_to_chain_coefficient     = { 20, 18, 16, 14, 12, 10,  8,  6,  4,  2, 1}
+level_to_chain_constant        = { 80, 77, 74, 71, 68, 65, 62, 60, 58, 20, 20}
+level_to_chain_coefficient     = { 20, 18, 16, 14, 12, 10,  8,  6,  4,  1, 1}
 -- How many panels you have to pop to earn a metal panel in your next row.
-level_to_metal_panel_frequency = { 12, 14, 16, 19, 23, 26, 29, 33, 37, 41, 18}
+level_to_metal_panel_frequency = { 12, 14, 16, 19, 23, 26, 29, 33, 37, 41, 41}
 -- How many panels you can have at most in your metal panel queue.
 level_to_metal_panel_cap       = { 21, 18, 18, 15, 15, 12,  9,  6,  6,  3, 3}
 
