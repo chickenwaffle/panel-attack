@@ -1,6 +1,8 @@
 local logger = require("logger")
 local tableUtils = require("tableUtils")
 
+local COMBOTIME
+
 local function sortByPopOrder(panelList, isGarbage)
   table.sort(panelList, function(a, b)
     if a.row == b.row then
@@ -74,12 +76,23 @@ function Stack:checkMatches()
     return
   end
 
+  if self.match.seed % 2 == 0 then
+    COMBOTIME = true
+  else
+    COMBOTIME = false
+  end
+
   local matchingPanels = self:getMatchingPanels()
   local comboSize = #matchingPanels
 
   if comboSize > 0 then
     local metalCount = getMetalCount(matchingPanels)
     local isChainLink = isNewChainLink(matchingPanels)
+
+    if COMBOTIME then
+      isChainLink = false
+    end
+
     if isChainLink then
       self:incrementChainCounter()
     end
@@ -396,24 +409,21 @@ function Stack:pushGarbage(coordinate, isChain, comboSize, metalCount)
     self.analytic:registerShock()
   end
 
-  local combo_pieces = combo_garbage[comboSize]
-  for i = 1, #combo_pieces do
-    if self.garbageTarget and self.telegraph then
-      -- Give out combo garbage based on the lookup table, even if we already made shock garbage,
-      self.telegraph:push({width = combo_pieces[i], height = 1, isMetal = false, isChain = false}, coordinate.column, coordinate.row,
-                          self.clock)
+  if COMBOTIME then
+    local combo_pieces = combo_garbage[comboSize]
+    for i = 1, #combo_pieces do
+      if self.garbageTarget and self.telegraph then
+        -- Give out combo garbage based on the lookup table, even if we already made shock garbage,
+        self.telegraph:push({width = combo_pieces[i], height = 1, isMetal = false, isChain = false}, coordinate.column, coordinate.row,
+                            self.clock)
+      end
+      self:recordComboHistory(self.clock, combo_pieces[i], 1, false)
     end
-    self:recordComboHistory(self.clock, combo_pieces[i], 1, false)
   end
 
   if isChain then
     if self.garbageTarget and self.telegraph then
-      local rowOffset = 0
-      if #combo_pieces > 0 then
-        -- If we did a combo also, we need to enqueue the attack graphic one row higher cause thats where the chain card will be.
-        rowOffset = 1
-      end
-      self.telegraph:push({width = 6, height = self.chain_counter - 1, isMetal = false, isChain = true}, coordinate.column, coordinate.row +  rowOffset,
+      self.telegraph:push({width = 6, height = self.chain_counter - 1, isMetal = false, isChain = true}, coordinate.column, coordinate.row,
                           self.clock)
     end
     self:recordChainHistory()
@@ -441,7 +451,7 @@ end
 -- calculates the stoptime that would be awarded for a certain chain/combo based on the stack's settings
 function Stack:calculateStopTime(comboSize, toppedOut, isChain, chainCounter)
   local stopTime = 0
-  if comboSize > 3 or isChain then
+  if comboSize > 3 and COMBOTIME or isChain then
     if toppedOut and isChain then
       if self.level then
         local length = (chainCounter > 4) and 6 or chainCounter
@@ -494,18 +504,14 @@ function Stack.attackSoundInfoForMatch(isChainLink, chainSize, comboSize, metalC
     return {type = e_chain_or_combo.shock, size = metalCount}
   elseif isChainLink then
     return {type = e_chain_or_combo.chain, size = chainSize}
-  elseif comboSize > 3 then
+  elseif comboSize > 3 and COMBOTIME then
     return {type = e_chain_or_combo.combo, size = comboSize}
   end
   return nil
 end
 
 function Stack:enqueueCards(attackGfxOrigin, isChainLink, comboSize)
-  if comboSize > 3 and isChainLink then
-    -- we did a combo AND a chain; cards should not overlap so offset the chain card to one row above the combo card
-    self:enqueue_card(false, attackGfxOrigin.column, attackGfxOrigin.row, comboSize)
-    self:enqueue_card(true, attackGfxOrigin.column, attackGfxOrigin.row + 1, self.chain_counter)
-  elseif comboSize > 3 then
+  if comboSize > 3 and COMBOTIME then
     -- only a combo
     self:enqueue_card(false, attackGfxOrigin.column, attackGfxOrigin.row, comboSize)
   elseif isChainLink then
@@ -525,7 +531,7 @@ function Stack:updateScoreWithBonus(comboSize)
 end
 
 function Stack:updateScoreWithCombo(comboSize)
-  if comboSize > 3 then
+  if comboSize > 3 and COMBOTIME then
     if (score_mode == SCOREMODE_TA) then
       self.score = self.score + score_combo_TA[math.min(30, comboSize)]
     elseif (score_mode == SCOREMODE_PDP64) then
