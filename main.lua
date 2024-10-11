@@ -67,11 +67,29 @@ local mainloop = nil
 -- Called at the beginning to load the game
 function love.load()
 
+  --fix betaserver.panelattack.com old IDs to avoid ban false positives
+  local betaIdPath = "servers/betaserver.panelattack.com/user_id.txt"
+  local fileInfo = love.filesystem.getInfo(betaIdPath, "file")
+
+  if fileInfo then
+    -- The timestamp for September 7th, 2024
+    local cutoffTime = os.time({year = 2024, month = 9, day = 7, hour = 0, min = 0, sec = 0})
+
+    if not fileInfo.modtime then
+      love.filesystem.remove(betaIdPath)
+    elseif fileInfo.modtime < cutoffTime then
+      -- The file was edited before September 7th, 2024
+      love.filesystem.remove(betaIdPath)
+    else
+      -- We got a freshly edited user ID, so we can keep it!
+    end
+  end
+
   if PROFILING_ENABLED then
     GAME.profiler:start()
   end
   
-  love.graphics.setDefaultFilter("linear", "linear")
+  love.graphics.setDefaultFilter("nearest", "nearest")
   if config.maximizeOnStartup and not love.window.isMaximized() then
     love.window.maximize()
   end
