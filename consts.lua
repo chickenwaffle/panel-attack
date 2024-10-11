@@ -11,7 +11,7 @@ consts.ENGINE_VERSIONS.PRE_TELEGRAPH = "045"
 consts.ENGINE_VERSIONS.TELEGRAPH_COMPATIBLE = "046"
 consts.ENGINE_VERSIONS.TOUCH_COMPATIBLE = "047"
 
-VERSION = consts.ENGINE_VERSIONS.TOUCH_COMPATIBLE -- The current engine version
+VERSION = "924" -- TricksyTreatsy (2024)
 VERSION_MIN_VIEW = consts.ENGINE_VERSIONS.TELEGRAPH_COMPATIBLE -- The lowest version number that can be watched
 
 ENGINE_VERSION = VERSION -- temporary until sceneRefactor lands on beta
