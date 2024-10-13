@@ -208,12 +208,15 @@ local function addReplayStatisticsToReplay(match, replay)
   return replay
 end
 
+-- disable writing replays on custom builds
+--[[
 function Replay.finalizeAndWriteReplay(extraPath, extraFilename, match, replay)
   Replay.finalizeReplay(match, replay)
   local path, filename = Replay.finalReplayFilename(extraPath, extraFilename)
   local replayJSON = json.encode(replay)
   Replay.write_replay_file(path, filename, replayJSON)
 end
+--]]
 
 function Replay.finalReplayFilename(extraPath, extraFilename)
   local now = os.date("*t", to_UTC(os.time()))
@@ -241,6 +244,7 @@ function Replay.finalizeReplay(match, replay)
   Replay.compressReplay(replay)
 end
 
+--[[
 function Replay.finalizeAndWriteVsReplay(battleRoom, outcome_claim, incompleteGame, match, replay)
 
   incompleteGame = incompleteGame or false
@@ -279,6 +283,7 @@ function Replay.finalizeAndWriteVsReplay(battleRoom, outcome_claim, incompleteGa
 
   Replay.finalizeAndWriteReplay(extraPath, extraFilename, match, replay)
 end
+--]]
 
 function Replay.compressReplay(replay)
   if replay.puzzle then
@@ -299,6 +304,8 @@ function Replay.compressReplay(replay)
 end
 
 -- writes a replay file of the given path and filename
+-- but actually don't because this is a custom build using v047 and crashes will occur on the regular build
+--[[
 function Replay.write_replay_file(path, filename, replayJSON)
   assert(path ~= nil)
   assert(filename ~= nil)
@@ -314,5 +321,5 @@ function Replay.write_replay_file(path, filename, replayJSON)
     end
   )
 end
-
+--]]
 return Replay

@@ -447,7 +447,7 @@ local function main_endless_time_setup(mode, speed, difficulty, level)
         extraPath = "Time Attack"
         extraFilename = "Spd" .. stack.speed .. "-Dif" .. stack.difficulty .. "-timeattack"
       end
-      Replay.finalizeAndWriteReplay(extraPath, extraFilename, GAME.match, replay)
+      --Replay.finalizeAndWriteReplay(extraPath, extraFilename, GAME.match, replay)
     end
 
     GAME.input:allowAllInputConfigurations()
@@ -1279,7 +1279,7 @@ function main_net_vs()
       local messages = server_queue:pop_all_with("leave_room")
       for _, msg in ipairs(messages) do
         if msg.leave_room then -- lost room during game, go back to lobby
-          Replay.finalizeAndWriteVsReplay(GAME.match.battleRoom, 0, true, GAME.match, replay)
+          --Replay.finalizeAndWriteVsReplay(GAME.match.battleRoom, 0, true, GAME.match, replay)
 
           -- Show a message that the match connection was lost along with the average frames behind.
           local message = loc("ss_room_closed_in_game")
@@ -1333,7 +1333,7 @@ function main_net_vs()
 
     if not GAME.battleRoom.spectating then
       if P1.tooFarBehindError or P2.tooFarBehindError then
-        Replay.finalizeAndWriteVsReplay(GAME.match.battleRoom, 0, true, GAME.match, replay)
+        --Replay.finalizeAndWriteVsReplay(GAME.match.battleRoom, 0, true, GAME.match, replay)
         GAME:clearMatch()
         json_send({leave_room = true})
         local ip = GAME.connected_server_ip
@@ -1378,7 +1378,7 @@ function main_net_vs()
       
       json_send({game_over = true, outcome = outcome_claim})
 
-      Replay.finalizeAndWriteVsReplay(GAME.match.battleRoom, outcome_claim, false, GAME.match, replay)
+      --Replay.finalizeAndWriteVsReplay(GAME.match.battleRoom, outcome_claim, false, GAME.match, replay)
     
       if GAME.battleRoom.spectating then
         -- next_func, text, winnerSFX, timemax, keepMusic, args
@@ -1452,7 +1452,7 @@ function main_local_vs()
         GAME.battleRoom.playerWinCounts[outcome_claim] = GAME.battleRoom.playerWinCounts[outcome_claim] + 1
       end
 
-      Replay.finalizeAndWriteVsReplay(GAME.match.battleRoom, outcome_claim, false, GAME.match, replay)
+      --Replay.finalizeAndWriteVsReplay(GAME.match.battleRoom, outcome_claim, false, GAME.match, replay)
 
       return {game_over_transition, 
           {select_screen.main, end_text, winSFX, nil, false, {select_screen, "2p_local_vs"}}
@@ -1510,7 +1510,7 @@ function main_local_vs_yourself()
   local function processGameResults(gameResult) 
     if not GAME.battleRoom.trainingModeSettings then
       GAME.scores:saveVsSelfScoreForLevel(P1.analytic.data.sent_garbage_lines, P1.level)
-      Replay.finalizeAndWriteVsReplay(nil, nil, false, GAME.match, replay)
+      --Replay.finalizeAndWriteVsReplay(nil, nil, false, GAME.match, replay)
     end
 
     local transitionSoundEffect = themes[config.theme].sounds.game_over

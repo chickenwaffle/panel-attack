@@ -225,6 +225,7 @@ function Room:resolve_game_outcome()
 
     logger.debug("resolve_game_outcome says: " .. outcome)
     --outcome is the player number of the winner, or 0 for a tie
+    --[[
     if self.a.save_replays_publicly ~= "not at all" and self.b.save_replays_publicly ~= "not at all" then
       --use UTC time for dates on replays
       local now = os.date("*t", to_UTC(os.time()))
@@ -273,6 +274,8 @@ function Room:resolve_game_outcome()
     else
       logger.debug("replay not saved because a player didn't want it saved")
     end
+    --]]
+    logger.debug("replay not saved because of modified build")
 
     self.replay = nil
 
