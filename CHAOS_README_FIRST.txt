@@ -27,6 +27,7 @@ Client-Side Changes
 + Stealth bridging is now a thing. hello modoki lol
 + Shake animation intensity has been reduced to roughly 75%. This will be removed as adjusting this is now an option in the newer version.
 + Health regeneration has been turned off.
++ 'MergeComboMetalQueue' in training files works differently now; the game will queue garbage in a more 'classic' fashion when this is set to 'true'.
 
 Other things I'm planning to implement:
 Allow colorless panels to be cleared by regular panels. Colorless panels being cleared will turn into air, but colorless panels cannot clear garbage. This will take some time to figure out how to implement it properly since all garbage has the same ID as colorless.
