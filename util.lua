@@ -423,3 +423,14 @@ function string.toCharTable(self)
   end
   return t
 end
+
+-- factorial loop for incrementing chain bonuses logarithmically
+
+function factorial(n)
+  fact = 1
+  for i = 1, n, 1
+  do
+    fact = fact * i
+  end
+  return fact
+end

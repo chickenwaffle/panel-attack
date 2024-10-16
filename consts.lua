@@ -9,7 +9,7 @@ consts.FRAME_RATE = 1/60
 consts.ENGINE_VERSIONS = {}
 consts.ENGINE_VERSIONS.PRE_TELEGRAPH = "045"
 consts.ENGINE_VERSIONS.TELEGRAPH_COMPATIBLE = "046"
-consts.ENGINE_VERSIONS.TOUCH_COMPATIBLE = "047"
+consts.ENGINE_VERSIONS.TOUCH_COMPATIBLE = "952"
 
 VERSION = consts.ENGINE_VERSIONS.TOUCH_COMPATIBLE -- The current engine version
 VERSION_MIN_VIEW = consts.ENGINE_VERSIONS.TELEGRAPH_COMPATIBLE -- The lowest version number that can be watched
@@ -27,7 +27,7 @@ canvas_height = 720
 global_background_color = { 0.0, 0.0, 0.0 }
 
 mouse_pointer_timeout = 1.5 --seconds
-RATING_SPREAD_MODIFIER = 400 -- rating players must be within to play ranked
+RATING_SPREAD_MODIFIER = 1000 -- rating players must be within to play ranked
 
 super_selection_duration = 30 -- frames (reminder: 60 frames per sec)
 super_selection_enable_ratio = 0.3 -- ratio at which super enable is considered started (cancelling it won't validate a character)
@@ -111,18 +111,18 @@ card_animation = {false,
 
   popfx_fade_animation = {1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8}
 
-FC_HOVER = {12,  9,  6, 3}
+FC_HOVER = {  8,  6,  5,  4}
 -- TODO: delete FC_MATCH?
 --FC_MATCH = {61, 49, 37}
-FC_FLASH = {44, 36, 22, 16}
-FC_FACE  = {17, 13, 15, 10} -- idk this is just MATCH-FLASH
-FC_POP   = { 9,  8,  7, 6}
-stop_time_combo =  {120, 120, 120, 90}
-stop_time_chain =  {300, 180, 120, 90}
-stop_time_danger = {600, 420, 240, 180}
+FC_FLASH = {44, 35, 28, 22}
+FC_FACE  = {15, 12, 10,  8} -- idk this is just MATCH-FLASH
+FC_POP   = { 9,  8,  7, 7}
+stop_time_combo =  {120, 90, 60, 30}
+stop_time_chain =  {150,113, 75, 45}
+stop_time_danger = {180,135, 90, 60}
 
-difficulty_to_ncolors_endless = {5,6,6,6}
-difficulty_to_ncolors_1Ptime = {6,6,6,6}
+difficulty_to_ncolors_endless = {4,5,6,7}
+difficulty_to_ncolors_1Ptime = {4,5,6,7}
 
 TIME_ATTACK_TIME = 120
 -- Yes, 2 is slower than 1 and 50..99 are the same.
@@ -158,36 +158,56 @@ panels_to_next_speed =
   45, 45, 45, 45, 45, 45, 45, 45, 45, 45,
   45, 45, 45, 45, 45, 45, 45, 45, math.huge}
 
+  LEVEL_DESCRIPTION = {
+    "Beginner (4 colors)",
+    "Beginner Plus (5 colors)",
+    "Novice (5 colors)",
+    "Novice Plus (6 colors)",
+    "Intermediate (5 colors)",
+    "Intermediate Plus (6 colors)",
+    "Advanced (5 colors)",
+    "Advanced Plus (6 colors)",
+    "Expert (5 colors)",
+    "Expert Plus (6 colors)",
+    "Master (7 colors)",
+    "Chaos Mode I (4 colors)",
+    "Chaos Mode II (5 colors)",
+    "Chaos Mode III (6 colors)",
+    "Chaos Mode IV (7 colors)",
+    }
+
 -- What speed level you start on.
-level_to_starting_speed        = {  1,  5,  9, 13, 17, 21, 25, 29, 27, 32, 45}
+level_to_starting_speed        = { 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 96, 95, 94, 93}
 -- How long you can spend at the top of the screen without dying, in frames ("Health").
-level_to_hang_time             = {121,101, 81, 66, 51, 41, 31, 21, 11,  1, 1}
+level_to_hang_time             = {159,122, 94, 72, 56, 43, 33, 25, 20, 15, 12,  1,  1,  1,  1}
 -- How many colors of panels can spawn in VS mode, not including metal panels.
-level_to_ncolors_vs            = {  5,  5,  5,  5,  5,  5,  5,  5,  6,  6, 6}
+level_to_ncolors_vs            = {  4,  5,  5,  6,  5,  6,  5,  6,  5,  6,  7,  4,  5,  6,  7}
 -- How many colors of panels can spawn in time trial mode.
-level_to_ncolors_time          = {  5,  5,  6,  6,  6,  6,  6,  6,  6,  6, 6}
+level_to_ncolors_time          = {  4,  5,  5,  6,  5,  6,  5,  6,  5,  6,  7,  4,  5,  6,  7}
 -- How long panels will hover if not supported by anything, in frames.
-level_to_hover                 = { 12, 12, 11, 10,  9,  6,  5,  4,  3,  6, 3}
+level_to_hover                 = {  9,  9,  8,  7,  6,  6,  5,  5,  4,  4,  4,  4,  5,  6,  7}
 -- How long newly-transformed panels from garbage will hover before falling, in frames.
-level_to_garbage_panel_hover   = { 41, 36, 31, 26, 21, 16, 13, 10,  7,  4, 3}
+level_to_garbage_panel_hover   = { 46, 35, 27, 21, 16, 12,  9,  7,  6,  4,  3,  3,  3,  3,  3}
 -- How long panels flash for before popping, in frames.
-level_to_flash                 = { 44, 44, 42, 42, 38, 36, 34, 32, 30, 28, 22}
+level_to_flash                 = { 60, 54, 49, 45, 41, 37, 33, 30, 27, 25, 23, 23, 23, 23, 23}
 -- How long panels remain in their "face" frame before popping, in frames.
 -- (They actually stay in their face frame for five frames longer than the numbers in this table for some reason...
 --  This makes timings accurate with Tetris Attack / Panel de Pon SFC.)
-level_to_face                  = { 20, 18, 17, 16, 15, 14, 13, 12, 11, 10, 8}
+level_to_face                  = { 20, 19, 17, 15, 14, 13, 12, 11, 10,  9,  8,  8,  8,  8,  8}
 -- How long panels take to pop after finishing their "face" frame, in frames.
-level_to_pop                   = {  9,  9,  8,  8,  8,  8,  8,  7,  7,  7, 6}
+level_to_pop                   = { 10,  9,  9,  9,  8,  8,  8,  7,  7,  7,  7,  7,  7,  7,  7}
 -- How long the stack stops when you clear combos, in frames.
-level_to_combo_constant        = {-20,-16,-12, -8, -3,  2,  7, 12, 17, 22, 27}
-level_to_combo_coefficient     = { 20, 18, 16, 14, 12, 10,  8,  6,  4,  2, 1}
+level_to_combo_constant        = {141,129,117,106, 97, 88, 80, 73, 66, 60, 55, 37, 41, 45, 50}
+level_to_combo_coefficient     = {  7,  6,  5,  5,  4,  4,  3,  3,  3,  3,  2,  1,  2,  2,  2}
 -- How long the stack stops when you clear chains, in frames.
-level_to_chain_constant        = { 80, 77, 74, 71, 68, 65, 62, 60, 58, 56, 53}
-level_to_chain_coefficient     = { 20, 18, 16, 14, 12, 10,  8,  6,  4,  2, 1}
+level_to_chain_constant        = {170,154,140,128,116,105, 96, 87, 79, 72, 65, 45, 49, 54, 60}
+level_to_chain_coefficient     = {  8,  7,  7,  6,  5,  5,  4,  4,  3,  3,  3,  1,  2,  2,  2}
 -- How many panels you have to pop to earn a metal panel in your next row.
-level_to_metal_panel_frequency = { 12, 14, 16, 19, 23, 26, 29, 33, 37, 41, 18}
+level_to_metal_panel_frequency = { 11, 18, 21, 25, 27, 31, 31, 37, 36, 40, 43, 21, 22, 24, 25}
 -- How many panels you can have at most in your metal panel queue.
-level_to_metal_panel_cap       = { 21, 18, 18, 15, 15, 12,  9,  6,  6,  3, 3}
+level_to_metal_panel_cap       = { 14, 13, 12, 11, 10,  9,  8,  8,  7,  6,  6,  6,  6,  6,  6}
+-- How the amount of garbage pieces in your queue affect stop and shake time.
+level_to_garbage_margin        = {  8, 13, 15, 19, 20, 23, 23, 27, 27, 30, 32, 15, 16, 18, 18}
 
 -- Stage clear seems to use a variant of vs mode's speed system,
 -- except that the amount of time between increases is not constant.
@@ -201,12 +221,39 @@ level_to_metal_panel_cap       = { 21, 18, 18, 15, 15, 12,  9,  6,  6,  3, 3}
 -- vs vhard cpu -> vs level 6 for all levels
 
 combo_garbage = {{}, {}, {}, {3}, {4},
-              {5}, {6}, {3,4}, {4,4}, {5,5},
-              {5,6}, {6,6}, {6,6,6}, {6,6,6,6},
-              [20]={6,6,6,6,6,6},
-              [27]={6,6,6,6,6,6,6,6}}
+{5}, {6}, {3}, {4}, {5},
+{6}, {3}, {4}, {5}, {6},
+{3}, {4}, {5}, {6}, {3},
+{4}, {5}, {6}, {3}, {4},
+{5}, {6}, {3}, {4}, {5},
+{6}, {3}, {4}, {5}, {6},
+{3}, {4}, {5}, {6}, {3},
+{4}, {5}, {6}, {3}, {4},
+{5}, {6}, {3}, {4}, {5},
+{6}, {3}, {4}, {5}, {6},
+{3}, {4}, {5}, {6}, {3},
+{4}, {5}, {6}}
+
 for i=1,72 do
   combo_garbage[i] = combo_garbage[i] or combo_garbage[i-1]
+end
+
+combo_garbage_classic = {{}, {}, {}, {3}, {4},
+{5}, {6}, {3,3}, {4,4}, {5,5},
+{6,6}, {3,3,3}, {4,4,4}, {5,5,5}, {6,6,6},
+{3,3,3,3}, {4,4,4,4}, {5,5,5,5}, {6,6,6,6}, {3,3,3,3,3},
+{4,4,4,4,4}, {5,5,5,5,5}, {6,6,6,6,6}, {3,3,3,3,3,3}, {4,4,4,4,4,4},
+{5,5,5,5,5,5}, {6,6,6,6,6,6}, {3,3,3,3,3,3,3}, {4,4,4,4,4,4,4}, {5,5,5,5,5,5,5},
+{6,6,6,6,6,6,6}, {3,3,3,3,3,3,3,3}, {4,4,4,4,4,4,4,4}, {5,5,5,5,5,5,5,5}, {6,6,6,6,6,6,6,6},
+{3,3,3,3,3,3,3,3,3}, {4,4,4,4,4,4,4,4,4}, {5,5,5,5,5,5,5,5,5}, {6,6,6,6,6,6,6,6,6}, {3,3,3,3,3,3,3,3,3,3},
+{4,4,4,4,4,4,4,4,4,4}, {5,5,5,5,5,5,5,5,5,5}, {6,6,6,6,6,6,6,6,6,6}, {3,3,3,3,3,3,3,3,3,3,3}, {4,4,4,4,4,4,4,4,4,4,4},
+{5,5,5,5,5,5,5,5,5,5,5}, {6,6,6,6,6,6,6,6,6,6,6}, {3,3,3,3,3,3,3,3,3,3,3,3}, {4,4,4,4,4,4,4,4,4,4,4,4}, {5,5,5,5,5,5,5,5,5,5,5,5},
+{6,6,6,6,6,6,6,6,6,6,6,6}, {3,3,3,3,3,3,3,3,3,3,3,3,3}, {4,4,4,4,4,4,4,4,4,4,4,4,4}, {5,5,5,5,5,5,5,5,5,5,5,5,5}, {6,6,6,6,6,6,6,6,6,6,6,6,6},
+{3,3,3,3,3,3,3,3,3,3,3,3,3,3}, {4,4,4,4,4,4,4,4,4,4,4,4,4,4}, {5,5,5,5,5,5,5,5,5,5,5,5,5,5}, {6,6,6,6,6,6,6,6,6,6,6,6,6,6}, {3,3,3,3,3,3,3,3,3,3,3,3,3,3,3},
+{4,4,4,4,4,4,4,4,4,4,4,4,4,4,4}, {5,5,5,5,5,5,5,5,5,5,5,5,5,5,5}, {6,6,6,6,6,6,6,6,6,6,6,6,6,6,6}}
+
+for i=1,72 do
+  combo_garbage_classic[i] = combo_garbage_classic[i] or combo_garbage_classic[i-1]
 end
 
 colors = {  red     = {220/255, 50/255,  47/255 },

@@ -14,7 +14,7 @@ for i = 14, 6, -1 do
   local x = -math.pi
   local step = math.pi * 2 / i
   for j = 1, i do
-    shake_arr[shake_idx] = (1 + math.cos(x)) / 2
+    shake_arr[shake_idx] = (1 + math.cos(x)) / 3
     x = x + step
     shake_idx = shake_idx + 1
   end
@@ -770,36 +770,85 @@ function Stack.render(self)
     end
     local y = self.frameOriginY * GFX_SCALE + backgroundPadding
   
-    local iconToTextSpacing = 30
-    local nextIconIncrement = 30
+    local iconToTextSpacing = 24
+    local nextIconIncrement = 24
     local column2Distance = 70
   
-    local fontIncrement = 8
-    local iconSize = 8
+    local fontIncrement = 5
+    local iconSize = 6
     local icon_width
     local icon_height
   
     -- Background
     grectangle_color("fill", (x - backgroundPadding) / GFX_SCALE , (y - backgroundPadding) / GFX_SCALE, width/GFX_SCALE, height/GFX_SCALE, 0, 0, 0, 0.5)
   
-    -- Panels cleared
+    --[[ -- Panels cleared
     icon_width, icon_height = panels[self.panels_dir].images.classic[1][6]:getDimensions()
     draw(panels[self.panels_dir].images.classic[1][6], x / GFX_SCALE, y / GFX_SCALE, 0, iconSize / icon_width, iconSize / icon_height)
     gprintf(analytic.data.destroyed_panels, x + iconToTextSpacing, y + 0, canvas_width, "left", nil, 1, fontIncrement)
   
     y = y + nextIconIncrement
+
+    -- Garbage panels cleared
+    icon_width, icon_height = characters[self.character].images.pop:getDimensions()
+    draw(characters[self.character].images.pop, x / GFX_SCALE, y / GFX_SCALE, 0, iconSize / icon_width, iconSize / icon_height)
+    gprintf(analytic.data.garbage_cleared, x + iconToTextSpacing, y + 0, canvas_width, "left", nil, 1, fontIncrement)
   
-    -- Garbage sent
+    y = y + nextIconIncrement]]
+  
+    -- Garbage lines sent
     icon_width, icon_height = characters[self.character].images.face:getDimensions()
     draw(characters[self.character].images.face, x / GFX_SCALE, y / GFX_SCALE, 0, iconSize / icon_width, iconSize / icon_height)
     gprintf(analytic.data.sent_garbage_lines, x + iconToTextSpacing, y + 0, canvas_width, "left", nil, 1, fontIncrement)
   
     y = y + nextIconIncrement
+
+    -- Garbage lines cleared
+    if analytic.data.garbage_cleared > 0 then
+      local lines_cleared = analytic.data.garbage_cleared / 6
+      analytic.lines_cleared = string.format("%0.1f", round(lines_cleared, 1))
+    end
+    icon_width, icon_height = characters[self.character].images.filler2:getDimensions()
+    draw(characters[self.character].images.filler2, x / GFX_SCALE, y / GFX_SCALE, 0, iconSize / icon_width, iconSize / icon_height)
+    gprintf(analytic.lines_cleared, x + iconToTextSpacing, y + 0, canvas_width, "left", nil, 1, fontIncrement)
   
-    -- GPM
-    if analytic.lastGPM == 0 or math.fmod(self.clock, 60) < self.max_runs_per_frame then
-      if self.clock > 0 and (analytic.data.sent_garbage_lines > 0) then
-        analytic.lastGPM = analytic:getRoundedGPM(self.clock)
+    y = y + nextIconIncrement
+
+    --[[ -- Offensive Power
+    local bias
+    if analytic.data.sent_garbage_lines > 0 then
+      bias = (analytic.data.sent_garbage_lines / analytic.lines_cleared) * 100
+      analytic.offense = string.format("%0.1f", round(bias, 1))
+    end
+    icon_width, icon_height = panels[self.panels_dir].images.classic[2][6]:getDimensions()
+    draw(panels[self.panels_dir].images.classic[2][6], x / GFX_SCALE, y / GFX_SCALE, 0, iconSize / icon_width, iconSize / icon_height)
+    gprintf(analytic.offense, x + iconToTextSpacing, y + 0, canvas_width, "left", nil, 1, fontIncrement)
+   
+    y = y + nextIconIncrement ]]
+
+    -- Efficiency
+    if analytic.data.destroyed_panels > 0 then
+      local efficiency = ((analytic.data.destroyed_panels - analytic.data.wasted_panels) / analytic.data.destroyed_panels) * 100
+      analytic.efficiency = string.format("%0.1f", round(efficiency, 1))
+    end
+    icon_width, icon_height = panels[self.panels_dir].images.classic[2][6]:getDimensions()
+    draw(panels[self.panels_dir].images.classic[3][6], x / GFX_SCALE, y / GFX_SCALE, 0, iconSize / icon_width, iconSize / icon_height)
+    gprintf(analytic.efficiency .. "%", x + iconToTextSpacing, y + 0, canvas_width, "left", nil, 1, fontIncrement)
+  
+    y = y + nextIconIncrement
+
+    -- Garbage in queue
+    analytic.garbage_in_queue = self.garbage_q:len()
+    icon_width, icon_height = characters[self.character].images.pop:getDimensions()
+    draw(characters[self.character].images.pop, x / GFX_SCALE, y / GFX_SCALE, 0, iconSize / icon_width, iconSize / icon_height)
+    gprintf(analytic.garbage_in_queue, x + iconToTextSpacing, y + 0, canvas_width, "left", nil, 1, fontIncrement)
+  
+    y = y + nextIconIncrement
+  
+    -- Garbabe lines per minute (GLPM)
+    if analytic.lastGPM == 0 or math.fmod(self.game_stopwatch, 60) < self.max_runs_per_frame then
+      if self.game_stopwatch > 0 and (analytic.data.sent_garbage_lines > 0) then
+        analytic.lastGPM = analytic:getRoundedGPM(self.game_stopwatch)
       end
     end
     icon_width, icon_height = self.theme.images.IMG_gpm:getDimensions()
@@ -807,8 +856,32 @@ function Stack.render(self)
     gprintf(analytic.lastGPM .. "/m", x + iconToTextSpacing, y + 0, canvas_width, "left", nil, 1, fontIncrement)  
   
     y = y + nextIconIncrement
+
+    -- Garbage pieces per minute (GPPM)
+    if analytic.lastPPM == 0 or math.fmod(self.game_stopwatch, 60) < self.max_runs_per_frame then
+      if self.game_stopwatch > 0 and (analytic.data.sent_garbage_lines > 0) then
+        analytic.lastPPM = analytic:getRoundedPPM(self.game_stopwatch)
+      end
+    end
+    icon_width, icon_height = panels[self.panels_dir].images.classic[9][1]:getDimensions()
+    draw(panels[self.panels_dir].images.classic[9][1], x / GFX_SCALE, y / GFX_SCALE, 0, iconSize / icon_width, iconSize / icon_height)
+    gprintf(analytic.lastPPM .. "/m", x + iconToTextSpacing, y + 0, canvas_width, "left", nil, 1, fontIncrement)
+
+    y = y + nextIconIncrement
+
+    -- Garbage cleared per minute (GCPM)
+    if analytic.lastGCPM == 0 or math.fmod(self.game_stopwatch, 60) < self.max_runs_per_frame then
+      if self.game_stopwatch > 0 and (analytic.data.garbage_cleared > 0) then
+        analytic.lastGCPM = analytic:getRoundedGCPM(self.game_stopwatch)
+      end
+    end
+    icon_width, icon_height = characters[self.character].images.flash:getDimensions()
+    draw(characters[self.character].images.flash, x / GFX_SCALE, y / GFX_SCALE, 0, iconSize / icon_width, iconSize / icon_height)
+    gprintf(analytic.lastGCPM .. "/m", x + iconToTextSpacing, y + 0, canvas_width, "left", nil, 1, fontIncrement)
+
+    y = y + nextIconIncrement
   
-    -- Moves
+    --[[ -- Moves
     icon_width, icon_height = self.theme.images.IMG_cursorCount:getDimensions()
     draw(self.theme.images.IMG_cursorCount, x / GFX_SCALE, y / GFX_SCALE, 0, iconSize / icon_width, iconSize / icon_height)
     gprintf(analytic.data.move_count, x + iconToTextSpacing, y + 0, canvas_width, "left", nil, 1, fontIncrement)
@@ -822,12 +895,12 @@ function Stack.render(self)
     end
     gprintf(analytic.data.swap_count, x + iconToTextSpacing, y + 0, canvas_width, "left", nil, 1, fontIncrement)
   
-    y = y + nextIconIncrement
+    y = y + nextIconIncrement]]
   
     -- APM
-    if analytic.lastAPM == 0 or math.fmod(self.clock, 60) < self.max_runs_per_frame then
-      if self.clock > 0 and (analytic.data.swap_count + analytic.data.move_count > 0) then
-        local actionsPerMinute = (analytic.data.swap_count + analytic.data.move_count) / (self.clock / 60 / 60)
+    if analytic.lastAPM == 0 or math.fmod(self.game_stopwatch, 60) < self.max_runs_per_frame then
+      if self.game_stopwatch > 0 and (analytic.data.swap_count + analytic.data.move_count > 0) then
+        local actionsPerMinute = (analytic.data.swap_count + analytic.data.move_count) / (self.game_stopwatch / 60 / 60)
         analytic.lastAPM = string.format("%0.0f", round(actionsPerMinute, 0))
       end
     end

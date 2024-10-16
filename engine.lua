@@ -64,10 +64,14 @@ Stack =
 
     if difficulty then
       if s.match.mode == "endless" then
+        score_mode = SCOREMODE_PDP64
         s.NCOLORS = difficulty_to_ncolors_endless[difficulty]
       elseif s.match.mode == "time" then
+        score_mode = SCOREMODE_TA
         s.NCOLORS = difficulty_to_ncolors_1Ptime[difficulty]
       end
+    else
+      score_mode = SCOREMODE_TA
     end
 
     -- frame.png dimensions
@@ -113,7 +117,7 @@ Stack =
     -- for different game modes or need to change it based on board width.
     s.garbageSizeDropColumnMaps = {
       {1, 2, 3, 4, 5, 6},
-      {1, 3, 5,},
+      {1, 3, 5},
       {1, 4},
       {1, 2, 3},
       {1, 2},
@@ -298,10 +302,10 @@ function Stack:calculateMultibarFrameCount()
 
   -- for a realistic max stop, let's only compare obtainable stop while topped out - while not topped out, stop doesn't matter after all
   -- x5 chain while topped out (bonus stop from extra chain links is capped at x5)
-  maxStop = math.max(maxStop, self:calculateStopTime(3, true, true, 5))
+  maxStop = math.max(maxStop, self:calculateStopTime(3, true, true, 13))
 
   -- while topped out, stop from combos is capped at 10 combo
-  maxStop = math.max(maxStop, self:calculateStopTime(10, true, false))
+  maxStop = math.max(maxStop, self:calculateStopTime(40, true, false))
 
   -- if we wanted to include stop in non-topped out states:
   -- combo stop is linear with combosize but +27 is a reasonable cutoff (garbage cap for combos)
@@ -364,6 +368,7 @@ function Stack.setLevel(self, level)
   self.combo_coefficient = level_to_combo_coefficient[level]
   self.chain_constant = level_to_chain_constant[level]
   self.chain_coefficient = level_to_chain_coefficient[level]
+  self.garbage_margin = level_to_garbage_margin[level]
   if self.match.mode == "2ptime" then
     self.NCOLORS = level_to_ncolors_time[level]
   else
@@ -1337,13 +1342,21 @@ function Stack.shouldDropGarbage(self)
       return true
     elseif from_chain then
       -- drop chain garbage higher than 1 row immediately
-      return next_garbage_block_height > 1
+      if self.level > 11 then
+        return next_garbage_block_height >= 1
+      else
+        return next_garbage_block_height > 1
+      end
     else
       -- attackengine garbage higher than 1 (aka chain garbage) is treated as combo garbage
       -- that is to circumvent the garbage queue not allowing to send multiple chains simultaneously
       -- and because of that hack, we need to do another hack here and allow n-height combo garbage
       -- but only if trainingmodesettings have been set on the GAME global
-      return next_garbage_block_height > 1 and GAME.battleRoom.trainingModeSettings ~= nil
+      if self.level > 11 then
+        return next_garbage_block_height >= 1
+      else
+        return next_garbage_block_height > 1
+      end
     end
   end
 end
@@ -1378,14 +1391,18 @@ function Stack.simulate(self)
     -- Increase the speed if applicable
     if self.speedIncreaseMode == 1 then
       -- increase per interval
-      if self.clock == self.nextSpeedIncreaseClock then
+      if self.game_stopwatch == self.nextSpeedIncreaseClock then
         self.speed = min(self.speed + 1, 99)
         self.nextSpeedIncreaseClock = self.nextSpeedIncreaseClock + DT_SPEED_INCREASE
       end
     elseif self.panels_to_speedup <= 0 then
       -- mode 2: increase speed based on cleared panels
       self.speed = min(self.speed + 1, 99)
-      self.panels_to_speedup = self.panels_to_speedup + panels_to_next_speed[self.speed]
+      if self.speed == 99 then
+        self.panels_to_speedup = math.huge
+      else
+      self.panels_to_speedup = 10
+      end
     end
 
     -- Phase 0 //////////////////////////////////////////////////////////////
@@ -1398,7 +1415,7 @@ function Stack.simulate(self)
           -- no gameover because it can't return otherwise, exit is taken care of by puzzle_failed
         end
       else
-        if self.panels_in_top_row then
+        if self.panels_in_top_row and not self:hasActivePanels() then
           self.health = self.health - 1
           if self.health < 1 and self.shake_time < 1 then
             self:set_game_over()
@@ -1413,7 +1430,7 @@ function Stack.simulate(self)
                 self.top_cur_row = self.height
                 self:new_row()
               end
-              self.rise_timer = self.rise_timer + speed_to_rise_time[self.speed]
+              self.rise_timer = 100 - self.speed
             end
           end
         end
@@ -1421,7 +1438,7 @@ function Stack.simulate(self)
     end
 
     if not self.panels_in_top_row and self.match.mode ~= "puzzle" and not self:has_falling_garbage() then
-      self.health = self.max_health
+      self.health = self.health
     end
 
     if self.displacement % 16 ~= 0 then
@@ -1464,7 +1481,11 @@ function Stack.simulate(self)
             SFX_Cur_Move_Play = 1
           end
           if self.cur_timer ~= self.cur_wait_time then
-            self.analytic:register_move()
+            if not self.game_stopwatch_running then
+              -- do nothing
+            else
+              self.analytic:register_move()
+            end
           end
         end
       else
@@ -1536,6 +1557,7 @@ function Stack.simulate(self)
         SFX_Fanfare_Play = self.chain_counter
       end
       self.analytic:register_chain(self.chain_counter)
+      self.analytic:register_garbage_sent(math.min(1, self.chain_counter))
       self.chain_counter = 0
 
       if self.telegraph then
@@ -1544,8 +1566,8 @@ function Stack.simulate(self)
       end
     end
 
-    if (self.score > 99999) then
-      self.score = 99999
+    if (self.score > 999999) then
+      self.score = 999999
     -- lol owned
     end
 
@@ -2225,6 +2247,18 @@ function Stack.tryDropGarbage(self, width, height, metal)
   return true
 end
 
+local function shake_margin_time(stopwatch)
+  local initialPeriod = 3600
+  local minutes = 10
+  local maxPeriod = (minutes * 3600) - initialPeriod
+  if stopwatch < initialPeriod then
+    return 1
+  else
+    local result = math.max(0, math.floor((1 - ((stopwatch - initialPeriod) / maxPeriod)) * 100) / 100)
+    return result
+  end
+end
+
 function Stack.getGarbageSpawnColumn(self, garbageWidth)
   local columns = self.garbageSizeDropColumnMaps[garbageWidth]
   local index = self.currentGarbageDropColumnIndexes[garbageWidth]
@@ -2244,7 +2278,7 @@ function Stack.dropGarbage(self, width, height, isMetal)
   end
 
   self.garbageCreatedCount = self.garbageCreatedCount + 1
-  local shakeTime = garbage_to_shake_time[width * height]
+  local shakeTime = math.min(90, 30 + (width * height * 2))
 
   for row = originRow, originRow + height - 1 do
     if not self.panels[row] then
@@ -2255,6 +2289,7 @@ function Stack.dropGarbage(self, width, height, isMetal)
         local panel = self:createPanelAt(row, col)
 
         if isPartOfGarbage(col) then
+          local classic_margin = self.garbage_margin * 2
           panel.garbageId = self.garbageCreatedCount
           panel.isGarbage = true
           panel.color = 9
@@ -2262,7 +2297,7 @@ function Stack.dropGarbage(self, width, height, isMetal)
           panel.height = height
           panel.y_offset = row - originRow
           panel.x_offset = col - originCol
-          panel.shake_time = shakeTime
+          panel.shake_time = math.min(shakeTime, math.max(18, math.floor(shakeTime * math.max(0, ((classic_margin - self.garbage_q:len()) / classic_margin)))))
           panel.state = "falling"
           panel.row = row
           panel.column = col
@@ -2346,7 +2381,7 @@ function Stack.new_row(self)
         this_panel_color = PanelGenerator.PANEL_COLOR_TO_NUMBER[this_panel_color]
       end
     elseif this_panel_color >= "a" and this_panel_color <= "z" then
-      if metal_panels_this_row > 1 then
+      if metal_panels_this_row > 0 then
         this_panel_color = 8
       else
         this_panel_color = PanelGenerator.PANEL_COLOR_TO_NUMBER[this_panel_color]
@@ -2457,7 +2492,7 @@ function Stack.onPop(self, panel)
       end
       self:enqueue_popfx(panel.column, panel.row, self.popSizeThisFrame)
     end
-    self.score = self.score + 10
+    self.score = self.score + ((panel.combo_size - 2) * (panel.combo_size - 1)) / 2
 
     self.panels_cleared = self.panels_cleared + 1
     if self.match.mode == "vs" and self.panels_cleared % level_to_metal_panel_frequency[self.level] == 0 then
@@ -2491,8 +2526,10 @@ function Stack.onGarbageLand(self, panel)
       if self:shouldChangeSoundEffects() then
         if panel.height > 3 then
           self.sfx_garbage_thud = 3
+        elseif panel.height >= 2 and panel.height <= 3 then
+          self.sfx_garbage_thud = 2
         else
-          self.sfx_garbage_thud = panel.height
+          self.sfx_garbage_thud = 1
         end
       end
       self.shake_time_on_frame = max(self.shake_time_on_frame, panel.shake_time, self.peak_shake_time or 0)
@@ -2514,7 +2551,7 @@ function Stack.hasChainingPanels(self)
   for row = 1, #self.panels do
     for col = 1, self.width do
       local panel = self.panels[row][col]
-      if panel.chaining and panel.color ~= 0 then
+      if panel.chaining and panel.color ~= 0 and panel.color ~= 9 then
         return true
       end
     end
@@ -2542,7 +2579,7 @@ function Stack.getActivePanels(self)
         if panel.color ~= 0
         -- dimmed is implicitly filtered by only checking in row 1 and up
         and panel.state ~= "normal"
-        and panel.state ~= "landing" then
+        and panel.state ~= "swapping" then
           activePanels[#activePanels+1] = panel
         end
       end
