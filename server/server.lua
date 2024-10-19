@@ -51,7 +51,7 @@ Server =
       self.socket:setoption("tcp-nodelay", true)
     end
 
-    self.playerbase = Playerbase("playerbase", "players.txt")
+    self.playerbase = Playerbase("playerbase", "../players.txt")
     read_players_file(self.playerbase)
     leaderboard = Leaderboard("leaderboard", self)
     read_leaderboard_file()

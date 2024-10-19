@@ -133,9 +133,9 @@ function write_leaderboard_file()
         leaderboard_table[#leaderboard_table + 1] = {user_id, v.user_name, v.rating, tostring(v.placement_done or ""), v.placement_rating, v.ranked_games_played, v.ranked_games_won, v.last_login_time}
         public_leaderboard_table[#public_leaderboard_table + 1] = {v.user_name, v.rating, v.ranked_games_played}
       end
-      csvfile.write("." .. sep .. "leaderboard.csv", leaderboard_table)
-      makeDirectoryRecursive("." .. sep .. "ftp")
-      csvfile.write("." .. sep .. "ftp" .. sep .. "PA_public_leaderboard.csv", public_leaderboard_table)
+      csvfile.write(".." .. sep .. "leaderboard.csv", leaderboard_table)
+      makeDirectoryRecursive(".." .. sep .. "ftp")
+      csvfile.write(".." .. sep .. "ftp" .. sep .. "PA_public_leaderboard.csv", public_leaderboard_table)
     end
   )
   if not status then
@@ -144,7 +144,7 @@ function write_leaderboard_file()
 end
 
 function read_leaderboard_file()
-  local filename = "./leaderboard.csv"
+  local filename = "../leaderboard.csv"
 
   local csv_table = {}
   local status, error = pcall(

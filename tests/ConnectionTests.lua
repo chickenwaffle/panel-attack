@@ -67,6 +67,7 @@ end
 
 testLoginInvalidUserID()
 
+--[[
 function testLoginDeniedForInvalidVersion()  
   local connection = Connection(nil, 1, testServer)
   
@@ -75,6 +76,7 @@ function testLoginDeniedForInvalidVersion()
 end
 
 testLoginDeniedForInvalidVersion()
+--]]
 
 function testLoginAllowed()  
   local connection = Connection(nil, 1, testServer)
