@@ -1,6 +1,6 @@
-I apparently broke something on my build, working on fixing it lol
+Everything seems fixed as far as I can tell. Need to test the server-side things again.
 
-VERY IMPORTANT: This build is based upon an older version of stable, so it is not up-to-date with
+VERY IMPORTANT: This build is based on an older version of stable, so it is not up-to-date with
 the current version of stable (May 2024 at the time of uploading this).
 
 The laundry list of changes off the top of my head:
@@ -39,3 +39,6 @@ Server-Side Changes
 + My ranking system has been implented. This is a very recent addition, and it still needs to be tested.
 + Matches no longer have to be played on the same level for it to be ranked. My ranking system does take into account level differences.
 + Touch is allowed to play ranked.
+
+Other things I plan to implment:
+All matches within range of each other will be ranked.

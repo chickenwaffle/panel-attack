@@ -15,11 +15,12 @@ leagues = { {league="Provisional",     min_rating = -1000},
           }
 PLACEMENT_MATCH_COUNT_REQUIREMENT = 20
 DEFAULT_RATING = 1500
-RATING_SPREAD_MODIFIER = MAX_TARGET_RATING / 3
-DEVIATION_SPREAD = RATING_SPREAD_MODIFIER / 2
+RATING_SPREAD_MODIFIER = 1000 -- affects expected outcomes. Recommended to set this to 1/3 of MAX_TARGET_RATING.
+DEVIATION_SPREAD = 500 -- -- affects how much a player's rating can change.
+MIN_ALLOWED_RATING = 100 -- the lowest allowed rating. Do not set this lower than 1.
 MAX_TARGET_RATING = 3000
 ALLOWABLE_RATING_SPREAD_MULITPLIER = 1 --set this to a huge number like 100 if you want everyone to be able to play with anyone, regardless of rating gap
-PLACEMENT_MATCH_K = 64 -- no longer used
+PLACEMENT_MATCH_MULTIPLIER = 4 -- Raises a player's RD by the multiple of the set number during the provisional period. Recommended is 4.
 NAME_LENGTH_LIMIT = 16
 PLACEMENT_MATCHES_ENABLED = true
 COMPRESS_REPLAYS_ENABLED = true
