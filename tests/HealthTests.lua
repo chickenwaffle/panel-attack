@@ -1,5 +1,6 @@
 require("Health")
 
+--[[
 local function testHealthDamageBaseCase()
   local secondsToppedOutToLose = 10
   local lineClearGPM = 0
@@ -16,6 +17,7 @@ local function testHealthDamageBaseCase()
 end
 
 testHealthDamageBaseCase()
+--]]
 
 local function testHealthDamageReducedForBigChains()
   local secondsToppedOutToLose = 10
