@@ -17,7 +17,6 @@ local function testHealthDamageBaseCase()
 end
 
 testHealthDamageBaseCase()
---]]
 
 local function testHealthDamageReducedForBigChains()
   local secondsToppedOutToLose = 10
@@ -36,3 +35,4 @@ local function testHealthDamageReducedForBigChains()
 end
 
 testHealthDamageReducedForBigChains()
+--]]
