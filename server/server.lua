@@ -421,24 +421,28 @@ function Server:removeSpectator(room, connection)
 end
 
 
-function Server:calculate_rating_adjustment(Rc, Ro, Oa, Rd, Ra, room) -- -- print("calculating expected outcome for") -- print(players[player_number].name.." Ranking: "..leaderboard.players[players[player_number].user_id].rating)
-  --[[ -- Chaos Ranking System by community member chaos952:
-      
+function Server:calculate_rating_adjustment(Rc, Ro, Oa, k) -- -- print("calculating expected outcome for") -- print(players[player_number].name.." Ranking: "..leaderboard.players[players[player_number].user_id].rating)
+  --[[ --Algorithm we are implementing, per community member Bbforky:
+      Formula for Calculating expected outcome:
+      RATING_SPREAD_MODIFIER = 400
+      Oe=1/(1+10^((Ro-Rc)/RATING_SPREAD_MODIFIER)))
+
       Oe= Expected Outcome
       Ro= Current rating of opponent
       Rc= Current rating
+
+      Formula for Calculating new rating:
+
+      Rn=Rc+k(Oa-Oe)
+
       Rn=New Rating
       Oa=Actual Outcome (0 for loss, 1 for win)
-      Rd= Rating Deviation
-      Ra= Adjusts Rd in cases of non-matching levels. 1 vs 11 matches will hold no value.
-      
-  ]]
-
+      k= Constant (Probably will use 10)
+  ]] -- print("vs")
+  -- print(players[player_number].opponent.name.." Ranking: "..leaderboard.players[players[player_number].opponent.user_id].rating)
   Oe = 1 / (1 + 10 ^ ((Ro - Rc) / RATING_SPREAD_MODIFIER))
-  Rd = math.max(10, (DEVIATION_SPREAD - math.log(Rc, MAX_TARGET_RATING) * DEVIATION_SPREAD) + (Rc / (MAX_TARGET_RATING / 10)))
-  Ra = (math.min(room.a.level, room.b.level) / 10) * ((10 - math.abs(room.a.level - room.b.level)) * 0.1)
-  Rn = math.max(MIN_ALLOWED_RATING, Rc + Rd * Ra * (Oa - Oe))
-  
+  -- print("expected outcome: "..Oe)
+  Rn = Rc + k * (Oa - Oe)
   return Rn
 end
 
@@ -465,12 +469,12 @@ function Server:adjust_ratings(room, winning_player_number, gameID)
     placement_done[players[player_number].user_id] = leaderboard.players[players[player_number].user_id].placement_done
   end
   for player_number = 1, 2 do
-    local Rd, Oa  --max point change per match, actual outcome
+    local k, Oa  --max point change per match, actual outcome
     room.ratings[player_number] = {}
     if placement_done[players[player_number].user_id] == true then
-      Rd = Rd
+      k = 10
     else
-      Rd = Rd * PLACEMENT_MATCH_MULTIPLIER
+      k = 50
     end
     if players[player_number].player_number == winning_player_number then
       Oa = 1
@@ -480,7 +484,7 @@ function Server:adjust_ratings(room, winning_player_number, gameID)
     if placement_done[players[player_number].user_id] then
       if placement_done[players[player_number].opponent.user_id] then
         logger.debug("Player " .. player_number .. " played a non-placement ranked match.  Updating his rating now.")
-        room.ratings[player_number].new = self:calculate_rating_adjustment(leaderboard.players[players[player_number].user_id].rating, leaderboard.players[players[player_number].opponent.user_id].rating, Oa, Rd)
+        room.ratings[player_number].new = self:calculate_rating_adjustment(leaderboard.players[players[player_number].user_id].rating, leaderboard.players[players[player_number].opponent.user_id].rating, Oa, k)
         self.database:insertPlayerELOChange(players[player_number].user_id, room.ratings[player_number].new, gameID)
       else
         logger.debug("Player " .. player_number .. " played ranked against an unranked opponent.  We'll process this match when his opponent has finished placement")

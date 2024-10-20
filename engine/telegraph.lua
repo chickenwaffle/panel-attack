@@ -24,7 +24,7 @@ Telegraph = class(function(self, sender)
   --note: keys for stoppers such as self.stoppers.chain[some_key]
   --will be the garbage block's index in the queue , and value will be the frame the stopper expires).
   --keys for self.stoppers.combo[some_key] will be garbage widths, and values will be frame_to_release
-  self.stoppers =  {chain = {}, combo = nil, metal = nil}
+  self.stoppers =  {chain = {}, combo = {}, metal = nil}
   
   self.sender = sender -- The stack that sent this garbage
   self.attacks = {} -- A copy of the chains and combos earned used to render the animation of going to the telegraph
@@ -146,22 +146,12 @@ end
 function Telegraph.add_combo_garbage(self, garbage, timeAttackInteracts)
   logger.debug("Telegraph.add_combo_garbage "..(garbage.width or "nil").." "..(garbage.isMetal and "true" or "false"))
   local garbageToSend = {}
-  if (GAME.battleRoom.trainingModeSettings == nil or GAME.battleRoom.trainingModeSettings.attackSettings == nil or not GAME.battleRoom.trainingModeSettings.attackSettings.mergeComboMetalQueue) then 
-    if not self.senderCurrentlyChaining then
-      garbageToSend[#garbageToSend+1] = {garbage.width, garbage.height, garbage.isMetal, garbage.isChain, timeAttackInteracts = timeAttackInteracts}
-      self.stoppers.metal = timeAttackInteracts + GARBAGE_TRANSIT_TIME + GARBAGE_TELEGRAPH_TIME
-    else
-      garbageToSend[#garbageToSend+1] = {garbage.width, garbage.height, garbage.isMetal, garbage.isChain, timeAttackInteracts = timeAttackInteracts}
-      self.stoppers.combo = timeAttackInteracts + GARBAGE_TRANSIT_TIME + GARBAGE_TELEGRAPH_TIME
-    end
+  if garbage.isMetal and (GAME.battleRoom.trainingModeSettings == nil or GAME.battleRoom.trainingModeSettings.attackSettings == nil or not GAME.battleRoom.trainingModeSettings.attackSettings.mergeComboMetalQueue) then
+    garbageToSend[#garbageToSend+1] = {garbage.width, garbage.height, true, false, timeAttackInteracts = timeAttackInteracts}
+    self.stoppers.metal = timeAttackInteracts + GARBAGE_TRANSIT_TIME + GARBAGE_TELEGRAPH_TIME
   else
-    if garbage.isMetal then
-      garbageToSend[#garbageToSend+1] = {garbage.width, garbage.height, garbage.isMetal, garbage.isChain, timeAttackInteracts = timeAttackInteracts}
-      self.stoppers.metal = timeAttackInteracts + GARBAGE_TRANSIT_TIME + GARBAGE_TELEGRAPH_TIME
-    else
-      garbageToSend[#garbageToSend+1] = {garbage.width, garbage.height, garbage.isMetal, garbage.isChain, timeAttackInteracts = timeAttackInteracts}
-      self.stoppers.combo = timeAttackInteracts + GARBAGE_TRANSIT_TIME + GARBAGE_TELEGRAPH_TIME
-    end
+    garbageToSend[#garbageToSend+1] = {garbage.width, garbage.height, garbage.isMetal, garbage.isChain, timeAttackInteracts = timeAttackInteracts}
+    self.stoppers.combo[garbage.width] = timeAttackInteracts + GARBAGE_TRANSIT_TIME + GARBAGE_TELEGRAPH_TIME
   end
   self.garbage_queue:push(garbageToSend)
   return garbageToSend
@@ -170,14 +160,15 @@ end
 function Telegraph:chainingEnded(frameEnded)
   if not GAME.battleRoom.trainingModeSettings then
     assert(frameEnded == self.sender.clock, "expected sender clock to equal attack")
-  end  
+  end
+
+  self.senderCurrentlyChaining = false
   local chain = self.garbage_queue.chain_garbage[self.garbage_queue.chain_garbage.last]
   if chain.finalized then
     logger.error("Finalizing a chain thats already finalized.")
   end
   logger.debug("finalizing chain at " .. frameEnded)
   chain.finalized = true
-  self.senderCurrentlyChaining = false
 end
 
 function Telegraph.grow_chain(self, timeAttackInteracts)
@@ -230,23 +221,25 @@ function Telegraph.pop_all_ready_garbage(self, time_to_check, just_peeking)
       n_chain_stoppers = n_chain_stoppers + 1
     end
   end
-  
+
   --remove any combo stoppers that expire this frame,
-  if subject.stoppers.combo and subject.stoppers.combo <= time_to_check then
-    logger.debug("removing a combo stopper at " .. subject.stoppers.combo)
-    subject.stoppers.combo = nil
+  for combo_garbage_width, combo_release_frame in pairs(subject.stoppers.combo) do
+    if combo_release_frame <= time_to_check then
+      logger.debug("removing a combo stopper at " .. combo_release_frame)
+      subject.stoppers.combo[combo_garbage_width] = nil
+    else 
+      n_combo_stoppers = n_combo_stoppers + 1
+    end
   end
 
   --remove the metal stopper if it expires this frame
   if subject.stoppers.metal and subject.stoppers.metal <= time_to_check then
     logger.debug("removing a metal stopper at " .. subject.stoppers.metal)
     subject.stoppers.metal = nil
-  else
-    n_combo_stoppers = n_combo_stoppers + 1
   end
   
-
   while subject.garbage_queue.chain_garbage:peek() do
+
     if not subject.stoppers.chain[subject.garbage_queue.chain_garbage.first] and 
        subject.garbage_queue.chain_garbage:peek().finalized then
       logger.debug("committing chain at " .. time_to_check)
@@ -261,19 +254,33 @@ function Telegraph.pop_all_ready_garbage(self, time_to_check, just_peeking)
       end
     end
   end
+
+  for combo_garbage_width=1,6 do
+    local n_blocks_of_this_width = subject.garbage_queue.combo_garbage[combo_garbage_width]:len()
+    
+    local frame_to_release = subject.stoppers.combo[combo_garbage_width]
+    if n_blocks_of_this_width > 0 then
+      if not frame_to_release then
+        logger.debug("committing combo at " .. time_to_check)
+        for i=1,n_blocks_of_this_width do
+          ready_garbage[#ready_garbage+1] = subject.garbage_queue:pop()
+        end
+      else 
+        --there was a stopper here, stop and return
+          if ready_garbage[1] then
+            return ready_garbage
+          else
+            return nil
+          end
+      end
+    end
+  end
   
   local frame_to_release_metal = subject.stoppers.metal
   while subject.garbage_queue.metal:peek() and not subject.stoppers.metal do
     logger.debug("committing metal at " .. time_to_check)
     ready_garbage[#ready_garbage+1] = subject.garbage_queue:pop()
   end
-
-  local frame_to_release = subject.stoppers.combo
-  while subject.garbage_queue.combo_garbage:peek() and not subject.stoppers.combo do
-    logger.debug("committing combo at " .. time_to_check)
-    ready_garbage[#ready_garbage+1] = subject.garbage_queue:pop()
-  end 
-
   if ready_garbage[1] then
     return ready_garbage
   else
@@ -449,7 +456,7 @@ function Telegraph:render()
             if current_block[3]--[[is_metal]] then
               stopperTime = telegraph_to_render.stoppers.metal
             else
-              stopperTime = telegraph_to_render.stoppers.combo
+              stopperTime = telegraph_to_render.stoppers.combo[current_block[1]]
             end
           end
 

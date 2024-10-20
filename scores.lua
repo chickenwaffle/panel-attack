@@ -10,7 +10,7 @@ Scores =
     self.version = currentVersion
 
     self.vsSelf = {}
-    for i = 1, 15, 1 do
+    for i = 1, 11, 1 do
       self.vsSelf[i] = {}
       self.vsSelf[i]["record"] = 0
       self.vsSelf[i]["last"] = 0
@@ -85,7 +85,7 @@ local function read_score_file()
   pcall(
     function()
       local read_data = {}
-      local file, err = love.filesystem.newFile("scores_chaos.json", "r")
+      local file, err = love.filesystem.newFile("scores.json", "r")
       if file then
         local teh_json = file:read(file:getSize())
         file:close()
@@ -122,7 +122,7 @@ function Scores.saveToFile(self)
   if self.version == currentVersion then
     pcall(
       function()
-        local file = love.filesystem.newFile("scores_chaos.json")
+        local file = love.filesystem.newFile("scores.json")
         file:open("w")
         file:write(json.encode(self))
         file:close()

@@ -2,14 +2,16 @@ local logger = require("logger")
 
 GarbageQueue = class(function(s)
     s.chain_garbage = Queue()
-    s.combo_garbage = Queue() --index here represents width, and length represents how many of that width queued
+    s.combo_garbage = {Queue(),Queue(),Queue(),Queue(),Queue(),Queue()} --index here represents width, and length represents how many of that width queued
     s.metal = Queue()
   end)
   
   function GarbageQueue.makeCopy(self)
     local other = GarbageQueue()
     other.chain_garbage = deepcpy(self.chain_garbage)
-    other.combo_garbage = deepcpy(self.combo_garbage)
+    for i=1, 6 do
+      other.combo_garbage[i] = deepcpy(self.combo_garbage[i])
+    end
     other.metal = deepcpy(self.metal)
     other.ghost_chain = self.ghost_chain
     return other
@@ -20,24 +22,16 @@ GarbageQueue = class(function(s)
       for k,v in pairs(garbage) do
         local width, height, metal, from_chain, finalized = unpack(v)
         if width and height then
-          if (GAME.battleRoom.trainingModeSettings == nil or GAME.battleRoom.trainingModeSettings.attackSettings == nil or not GAME.battleRoom.trainingModeSettings.attackSettings.mergeComboMetalQueue) then            
-            if from_chain then
-              self.chain_garbage:push(v)
-              self.ghost_chain = nil
-            elseif self.chain_garbage[self.chain_garbage.first] == nil then 
-              self.metal:push(v)
-            else
-              self.combo_garbage:push(v)
+          if metal and (GAME.battleRoom.trainingModeSettings == nil or GAME.battleRoom.trainingModeSettings.attackSettings == nil or not GAME.battleRoom.trainingModeSettings.attackSettings.mergeComboMetalQueue) then
+            self.metal:push(v)
+          elseif from_chain or (height > 1 and not GAME.battleRoom.trainingModeSettings) then
+            if not from_chain then
+              error("ERROR: garbage with height > 1 was not marked as 'from_chain'")
             end
+            self.chain_garbage:push(v)
+            self.ghost_chain = nil
           else
-            if from_chain then
-              self.chain_garbage:push(v)
-              self.ghost_chain = nil
-            elseif metal then
-              self.metal:push(v)
-            else
-              self.combo_garbage:push(v)
-            end
+            self.combo_garbage[width]:push(v)
           end
         end
       end
@@ -46,13 +40,6 @@ GarbageQueue = class(function(s)
   
   -- Returns the first chain, then combo, then metal, in that order.
   function GarbageQueue.pop(self, just_peeking)
-    if self.metal:peek() then
-      if not just_peeking then
-        return self.metal:pop()
-      else
-        return self.metal:peek()
-      end
-    end
     --check for any chain garbage, and return the first one (chronologically), if any
     local first_chain_garbage = self.chain_garbage:peek()
     if first_chain_garbage then
@@ -66,22 +53,8 @@ GarbageQueue = class(function(s)
         return ret
       end
     end
-    
-    if self.combo_garbage:peek() then
-      if not just_peeking then
-        return self.combo_garbage:pop()
-      else
-        return self.combo_garbage:peek()
-      end
-    end
-    
-    
-    -- I JUST COPIED metal:peek() BELOW AND PUT IT HERE IN PLACE OF PREVIOUS FUNCTION
     --check for any combo garbage, and return the smallest one, if any
-    
-    
-    --[[
-      for k,v in ipairs(self.combo_garbage) do
+    for k,v in ipairs(self.combo_garbage) do
       if v:peek() then
         if not just_peeking then
           return v:pop()
@@ -90,17 +63,22 @@ GarbageQueue = class(function(s)
         return v:peek()
       end
     end
-    ]]
     --check for any metal garbage, and return one if any
+    if self.metal:peek() then
+      if not just_peeking then
+        return self.metal:pop()
+      else
+        return self.metal:peek()
+      end
+    end
     return nil
   end
   
   function GarbageQueue.to_string(self)
-    --local ret = "Combos:\n"
-    local ret = "Combos: lol nope \n"
-      --for i=6, 3, -1 do
-      ret = ret..i.."-wides: "..self.combo_garbage:len().."\n"
-    --end
+    local ret = "Combos:\n"
+    for i=6, 3, -1 do
+      ret = ret..i.."-wides: "..self.combo_garbage[i]:len().."\n"
+    end
       ret = ret.."Chains:\n"
     if self.chain_garbage:peek() then
       --list chain garbage last to first such that the one to fall first is at the bottom of the list (if any).
@@ -127,13 +105,9 @@ GarbageQueue = class(function(s)
   function GarbageQueue.len(self)
     local ret = 0
     ret = ret + self.chain_garbage:len()
-    --[[
     for k,v in ipairs(self.combo_garbage) do
       ret = ret + v:len()
     end
-    ]]
-    -- DITCH THE PREVIOUS ITERATOR AND JUST RETURN combo_garbage:len()
-    ret = ret + self.combo_garbage:len()
     ret = ret + self.metal:len()
     return ret
   end
@@ -169,7 +143,11 @@ GarbageQueue = class(function(s)
     local current_block = copy:pop()
     while current_block and not idx_found do
       idx = idx + 1
-      idx_found = true
+      if from_chain and current_block[4]--[[from_chain]] and current_block[2]--[[height]] >= garbage_height then
+        idx_found = true
+      elseif not from_chain and not current_block[4]--[[from_chain]] and current_block[1]--[[width]] >= garbage_width then
+        idx_found = true
+      end
       current_block = copy:pop()  
     end
     if idx == -1 then

@@ -49,7 +49,7 @@ function ChallengeStage:characterForStageNumber(playerCharacter)
     end
   end
 
-  local character = otherCharacters[math.random(#otherCharacters)]
+  local character = otherCharacters[((self.stageNumber - 1) % #otherCharacters) + 1]
   return character
 end
   

@@ -73,7 +73,7 @@ end
 
 function select_screen_graphics:ratingDifferenceString(playerNumber) 
   local result = ""
-  if current_server_supports_ranking and not self.select_screen:inPlacementMatches() then
+  if self.select_screen:isNetPlay() and not self.select_screen:inPlacementMatches() then
     if self.select_screen.currentRoomRatings[playerNumber].difference then
       if self.select_screen.currentRoomRatings[playerNumber].difference > 0 then
         result = "(+" .. self.select_screen.currentRoomRatings[playerNumber].difference .. ") "
@@ -98,28 +98,26 @@ function select_screen_graphics.get_player_state_str(self, player_number, includ
   local win_count = GAME.battleRoom.playerWinCounts[player_number]
   local totalGames = GAME.battleRoom:totalGames()
 
-  local state = ""
-  if current_server_supports_ranking then
-    state = state .. loc("ss_rating") .. " " .. (self.select_screen.currentRoomRatings[player_number].league or "")
-    if not self.select_screen.currentRoomRatings[player_number].placement_match_progress then
+  local state = "" 
+  if self.select_screen:isNetPlay() then
+     state = state .. loc("ss_rating") .. " " .. (self.select_screen.currentRoomRatings[player_number].league or "")
+     if not self.select_screen.currentRoomRatings[player_number].placement_match_progress then
       state = state .. "\n" .. rating_difference .. self.select_screen.currentRoomRatings[player_number].new
     elseif self.select_screen.currentRoomRatings[player_number].placement_match_progress and self.select_screen.currentRoomRatings[player_number].new and self.select_screen.currentRoomRatings[player_number].new == 0 then
       state = state .. "\n" .. self.select_screen.currentRoomRatings[player_number].placement_match_progress
     end
   end
+
   if self.select_screen:isMultiplayer() then
-    if current_server_supports_ranking then
-      state = state .. "\n"
-    end
-    state = state .. loc("ss_wins") .. " " .. win_count
-    if (current_server_supports_ranking and expected_win_ratio) or totalGames > 0 then
+    state = state .. "\n" .. loc("ss_wins") .. " " .. win_count
+    if (expected_win_ratio) or totalGames > 0 then
       state = state .. "\n" .. loc("ss_winrate") .. "\n"
       local need_line_return = false
       if totalGames > 0 then
         state = state .. "    " .. loc("ss_current_rating") .. " " .. (100 * round(win_count / (totalGames), 2)) .. "%"
         need_line_return = true
       end
-      if current_server_supports_ranking and expected_win_ratio then
+      if expected_win_ratio then
         if need_line_return then
           state = state .. "\n"
         end
@@ -490,10 +488,6 @@ function select_screen_graphics.draw_levels(self, player, player_number, y_paddi
     if i == player.level then
       local cursorScale = 5 / themes[config.theme].images.IMG_level_cursor:getWidth()
       menu_drawf(themes[config.theme].images.IMG_level_cursor, self.render_x + drawX + level_width / 2, self.render_y + y_padding + themes[config.theme].images.IMG_levels[i]:getHeight() * 0.5 * level_scale, "center", "top", 0, cursorScale, cursorScale)
-      -- Draw level description underneath level selector
-      local description_x = self.render_x + leftRightIndicatorWidth + paddingWidth + level_width
-      local description_y =  self.render_y + y_padding * 1.1 + themes[config.theme].images.IMG_levels[i]:getHeight() * 0.5 * level_scale
-      gprintf(LEVEL_DESCRIPTION[player.level], description_x, description_y, canvas_width, "left")
     end
 
     drawX = drawX + level_width

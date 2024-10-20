@@ -204,7 +204,7 @@ function select_screen.on_select(self, player, super)
     player.selectedCharacter = player.cursor.positionId
     local character = characters[player.selectedCharacter]
     if character then
-      player.character = character.id
+      player.character = CharacterLoader.resolveCharacterSelection(character.id)
       CharacterLoader.load(player.character)
       characterSelectionSoundHasBeenPlayed = character:play_selection_sfx()
       if super then
@@ -281,8 +281,7 @@ end
 
 -- returns the navigable grid layout of the select screen before loading characters
 function select_screen.getTemplateMap(self)
-  logger.trace("current_server_supports_ranking: " .. tostring(current_server_supports_ranking))
-  if self:isNetPlay() and current_server_supports_ranking then
+  if self:isNetPlay() then
     return {
       {"__Panels", "__Panels", "__Mode", "__Mode", "__Stage", "__Stage", "__Level", "__Level", "__Ready"},
       {"__Random", "__Empty", "__Empty", "__Empty", "__Empty", "__Empty", "__Empty", "__Empty", "__Empty"},
@@ -505,8 +504,8 @@ end
 function select_screen.initializeFromPlayerConfig(self, playerNumber)
   self.players[playerNumber].stage = config.stage
   self.players[playerNumber].selectedStage = config.stage
-  self.players[playerNumber].character = config.character
   self.players[playerNumber].selectedCharacter = config.character
+  self.players[playerNumber].character = config.character
   self.players[playerNumber].level = config.level
   self.players[playerNumber].inputMethod = config.inputMethod or "controller"
   self.players[playerNumber].panels_dir = config.panels
@@ -556,6 +555,7 @@ function select_screen.setUpOpponentPlayer(self)
       self.players[self.op_player_number].selectedCharacter = global_op_state.character
       self.players[self.op_player_number].character = global_op_state.character
       self.players[self.op_player_number].stage = global_op_state.stage
+      self.players[self.op_player_number].level = global_op_state.level
       self.players[self.op_player_number].panels_dir = global_op_state.panels_dir
     end
   end

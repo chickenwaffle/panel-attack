@@ -374,7 +374,12 @@ function Room:rating_adjustment_approved()
   if player_level_out_of_bounds_for_ranked then
     reasons[#reasons + 1] = "Only levels between " .. MIN_LEVEL_FOR_RANKED .. " and " .. MAX_LEVEL_FOR_RANKED .. " are allowed for ranked play."
   end
-
+  if players[1].level ~= players[2].level then
+    reasons[#reasons + 1] = "Levels don't match"
+  end
+  if players[1].inputMethod == "touch" or players[2].inputMethod == "touch" then
+    reasons[#reasons + 1] = "Touch input is not currently allowed in ranked matches."
+  end
   for player_number = 1, 2 do
     if not players[player_number].wants_ranked_match then
       reasons[#reasons + 1] = players[player_number].name .. " doesn't want ranked"

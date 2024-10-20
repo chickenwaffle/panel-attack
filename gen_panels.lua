@@ -58,47 +58,6 @@ function PanelGenerator.privateCheckPanels(ret)
   end
 end
 
-function PanelGenerator.markedShockPanelsString(panels)
-  --logger.debug("panels before potential metal panel position assignments:")
-  --logger.debug(ret)
-  --assign potential metal panel placements
-  local row_width = 6 --this may belong in globals if we were to ever make a game mode with a different width
-  local new_ret = "000000"
-  local new_row
-  local prev_row
-  for i = 1, string.len(panels) / 6 do
-    local current_row_from_ret = string.sub(panels, (i - 1) * row_width + 1, (i - 1) * row_width + row_width)
-    --logger.debug("current_row_from_ret: " .. current_row_from_ret)
-    if tonumber(current_row_from_ret) then --doesn't already have letters in it for metal panel locations
-      prev_row = string.sub(new_ret, 0 - row_width, -1)
-      local first, second  --locations of potential metal panels
-      --while panel vertically adjacent is not numeric, so can be a metal panel
-      while not first or not tonumber(string.sub(prev_row, first, first)) do
-        first = love.math.random(1, row_width)
-      end
-      while not second or second == first or not tonumber(string.sub(prev_row, second, second)) do
-        second = love.math.random(1, row_width)
-      end
-      new_row = ""
-      for j = 1, row_width do
-        local chr_from_ret = string.sub(panels, (i - 1) * row_width + j, (i - 1) * row_width + j)
-        local num_from_ret = tonumber(chr_from_ret)
-        if j == first then
-          new_row = new_row .. (PANEL_COLOR_NUMBER_TO_UPPER[num_from_ret] or chr_from_ret or "0")
-        elseif j == second then
-          new_row = new_row .. (PANEL_COLOR_NUMBER_TO_LOWER[num_from_ret] or chr_from_ret or "0")
-        else
-          new_row = new_row .. chr_from_ret
-        end
-      end
-    else
-      new_row = current_row_from_ret
-    end
-    new_ret = new_ret .. new_row
-  end
-  return new_ret
-end
-
 function PanelGenerator.makePanels(seed, ncolors, prev_panels, mode, level, opponentLevel)
 
   PanelGenerator.setSeed(seed)
@@ -110,13 +69,13 @@ function PanelGenerator.makePanels(seed, ncolors, prev_panels, mode, level, oppo
     return
   end
   local cut_panels = false
-  local disallowAdjacentColors = (mode == "vs" and (level < 3 or level > 6))
+  local disallowAdjacentColors = (mode == "vs" and level > 7)
 
   if prev_panels == "" then
     ret = "000000"
     rows_to_make = 7
     -- During the initial board we can't allow adjacent colors if the other player can't
-    disallowAdjacentColors = (mode == "vs" and ((level < 3 or level > 6) or (opponentLevel or 1) > 6))
+    disallowAdjacentColors = (mode == "vs" and (level > 7 or (opponentLevel or 1) > 7))
     if mode == "vs" or mode == "endless" or mode == "time" then
       cut_panels = true
     end
@@ -131,7 +90,44 @@ function PanelGenerator.makePanels(seed, ncolors, prev_panels, mode, level, oppo
 
   PanelGenerator.privateCheckPanels(ret)
 
-  ret = PanelGenerator.markedShockPanelsString(ret)
+  --logger.debug("panels before potential metal panel position assignments:")
+  --logger.debug(ret)
+  --assign potential metal panel placements
+  local row_width = 6 --this may belong in globals if we were to ever make a game mode with a different width
+  local new_ret = "000000"
+  local new_row
+  local prev_row
+  for i = 1, string.len(ret) / 6 do
+    local current_row_from_ret = string.sub(ret, (i - 1) * row_width + 1, (i - 1) * row_width + row_width)
+    --logger.debug("current_row_from_ret: " .. current_row_from_ret)
+    if tonumber(current_row_from_ret) then --doesn't already have letters in it for metal panel locations
+      prev_row = string.sub(new_ret, 0 - row_width, -1)
+      local first, second  --locations of potential metal panels
+      --while panel vertically adjacent is not numeric, so can be a metal panel
+      while not first or not tonumber(string.sub(prev_row, first, first)) do
+        first = love.math.random(1, row_width)
+      end
+      while not second or second == first or not tonumber(string.sub(prev_row, second, second)) do
+        second = love.math.random(1, row_width)
+      end
+      new_row = ""
+      for j = 1, row_width do
+        local chr_from_ret = string.sub(ret, (i - 1) * row_width + j, (i - 1) * row_width + j)
+        local num_from_ret = tonumber(chr_from_ret)
+        if j == first then
+          new_row = new_row .. (PANEL_COLOR_NUMBER_TO_UPPER[num_from_ret] or chr_from_ret or "0")
+        elseif j == second then
+          new_row = new_row .. (PANEL_COLOR_NUMBER_TO_LOWER[num_from_ret] or chr_from_ret or "0")
+        else
+          new_row = new_row .. chr_from_ret
+        end
+      end
+    else
+      new_row = current_row_from_ret
+    end
+    new_ret = new_ret .. new_row
+  end
+  ret = new_ret
 
   PanelGenerator.privateCheckPanels(ret)
 
@@ -172,20 +168,11 @@ function PanelGenerator.makeGarbagePanels(seed, ncolors, prev_panels, mode, leve
     prev_panels = "000000"
   end
 
-  local disallowAdjacentColors = (mode == "vs" and (level < 3 or level > 6))
+  local disallowAdjacentColors = (mode == "vs" and level > 7)
   local ret = PanelGenerator.privateGeneratePanels(20, ncolors, prev_panels, disallowAdjacentColors)
 
   if firstPanelSet then
     ret = string.sub(ret, 7, -1)
   end
-
-  PanelGenerator.privateCheckPanels(ret)
-  
-  ret = PanelGenerator.markedShockPanelsString(ret)
-
-  ret = string.sub(ret, 7, -1)
-  
-  PanelGenerator.privateCheckPanels(ret)
-
   return ret
 end
