@@ -8,7 +8,7 @@ The laundry list of changes off the top of my head:
 Client-Side Changes
 ==========
 + Levels on both classic and modern levels have been rebalanced so they scale in difficulty properly. Level 8 on this build is the closest to level 10 on the normal build.
-+ Four new levels have been added, called the Chaos Modes. The Chaos Modes basically replace EX Mode; games on these levels will be much shorter compared to the normal levels.
++ Four new levels have been added, called the Chaos Modes. The Chaos Modes basically replace EX Mode; matches on these levels will be much shorter compared to the normal levels.
 + Garbage margin has been implemented in versus modes. The more garbage a player has built up in their queue, the less stop and shake time they get.
 + 'Speed margin' has been implemented into Endless; higher speed equates to less stop time.
 + The garbage system has been changed.
@@ -34,6 +34,7 @@ Client-Side Changes
 + APM now calculates accurately, and moves made during countdown are not counted towards APM.
 
 Other things I'm planning to implement:
++ Change analytics displayed based on the game mode being played.
 + Allow colorless panels to be cleared by regular panels. Colorless panels being cleared will turn into air, but colorless panels cannot clear garbage.
 + 1p vs garbage mode.
 
