@@ -30,14 +30,20 @@ Client-Side Changes
 + Shake animation intensity has been reduced to roughly 75%. This will be removed as adjusting this is now an option in the newer version.
 + Health regeneration has been turned off.
 + 'MergeComboMetalQueue' in training files works differently now; the game will queue garbage in a more 'classic' fashion when this is set to 'true'.
++ GPM now calculates accurately.
++ APM now calculates accurately, and moves made during countdown are not counted towards APM.
 
 Other things I'm planning to implement:
-Allow colorless panels to be cleared by regular panels. Colorless panels being cleared will turn into air, but colorless panels cannot clear garbage. This will take some time to figure out how to implement it properly since all garbage has the same ID as colorless.
++ Allow colorless panels to be cleared by regular panels. Colorless panels being cleared will turn into air, but colorless panels cannot clear garbage.
++ 1p vs garbage mode.
+
+These will take time to figure out how to implement them correctly.
 
 Server-Side Changes
 ==========
 + My ranking system has been implented. This is a very recent addition, and it still needs to be tested.
 + Matches no longer have to be played on the same level for it to be ranked. My ranking system does take into account level differences.
+  1-vs-11 matches have a value of 0, so that will basically be an unranked match.
 + Touch is allowed to play ranked.
 
 Other things I plan to implment:
