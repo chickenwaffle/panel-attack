@@ -9,7 +9,7 @@
 shopt -s extglob
 
 build_dir="../dev-build/"
-win_files_dir="../love-11.4-win32/"
+win_files_dir="../love-11.5-win32/"
 
 # Cleanup the build dir
 rm -Rf "${build_dir}"

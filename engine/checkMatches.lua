@@ -51,24 +51,6 @@ local function getOnScreenCount(stackHeight, panels)
   return count
 end
 
--- returns true if this panel can be matched
--- false if it cannot be matched
-local function canMatch(panel)
-  -- panels without colors can't match
-  if panel.color == 0 or panel.color == 9 then
-    return false
-  else
-    if panel.state == "normal"
-      or panel.state == "landing"
-      or (panel.matchAnyway and panel.state == "hovering")  then
-      return true
-    else
-      -- swapping, matched, popping, popped, hover, falling, dimmed, dead
-      return false
-    end
-  end
-end
-
 function Stack:checkMatches()
   if self.do_countdown then
     return
@@ -85,10 +67,10 @@ function Stack:checkMatches()
     end
     -- interrupt any ongoing manual raise
     self.manual_raise = false
-
-    local attackGfxOrigin = self:applyMatchToPanels(matchingPanels, isChainLink, comboSize)
-    local garbagePanels = self:getConnectedGarbagePanels(matchingPanels)
-    local garbagePanelCountOnScreen = 0
+   
+  local attackGfxOrigin = self:applyMatchToPanels(matchingPanels, isChainLink, comboSize)
+  local garbagePanels = self:getConnectedGarbagePanels(matchingPanels)
+  local garbagePanelCountOnScreen = 0
     if #garbagePanels > 0 then
       garbagePanelCountOnScreen = getOnScreenCount(self.height, garbagePanels)
       local garbageMatchTime = self.FRAMECOUNTS.MATCH + self.FRAMECOUNTS.POP * (comboSize + garbagePanelCountOnScreen)
@@ -103,10 +85,15 @@ function Stack:checkMatches()
       self:pushGarbage(attackGfxOrigin, isChainLink, comboSize, metalCount)
       self:queueAttackSoundEffect(isChainLink, self.chain_counter, comboSize, metalCount)
     end
+    if comboSize == 3 and (not isChainLink) and metalCount == 0 and #garbagePanels == 0 then
+      self.analytic:register_wasted_panels(comboSize)
+    end
 
     self.analytic:register_destroyed_panels(comboSize)
     self:updateScoreWithBonus(comboSize)
     self:enqueueCards(attackGfxOrigin, isChainLink, comboSize)
+
+    
   end
 
   self:clearChainingFlags()
@@ -120,7 +107,7 @@ function Stack:getMatchingPanels()
   for row = 1, self.height do
     for col = 1, self.width do
       local panel = panels[row][col]
-      if panel.stateChanged and canMatch(panel) then
+      if panel.stateChanged and panel:canMatch() then
         candidatePanels[#candidatePanels + 1] = panel
       end
     end
@@ -137,7 +124,7 @@ function Stack:getMatchingPanels()
     -- below
     for row = candidatePanels[i].row - 1, 1, -1 do
       panel = panels[row][candidatePanels[i].column]
-      if panel.color == candidatePanels[i].color  and canMatch(panel) then
+      if panel.color == candidatePanels[i].color and panel:canMatch() then
         verticallyConnected[#verticallyConnected + 1] = panel
       else
         break
@@ -146,7 +133,7 @@ function Stack:getMatchingPanels()
     -- above
     for row = candidatePanels[i].row + 1, self.height do
       panel = panels[row][candidatePanels[i].column]
-      if panel.color == candidatePanels[i].color  and canMatch(panel) then
+      if panel.color == candidatePanels[i].color and panel:canMatch() then
         verticallyConnected[#verticallyConnected + 1] = panel
       else
         break
@@ -155,7 +142,7 @@ function Stack:getMatchingPanels()
     -- to the left
     for column = candidatePanels[i].column - 1, 1, -1 do
       panel = panels[candidatePanels[i].row][column]
-      if panel.color == candidatePanels[i].color  and canMatch(panel) then
+      if panel.color == candidatePanels[i].color and panel:canMatch() then
         horizontallyConnected[#horizontallyConnected + 1] = panel
       else
         break
@@ -164,7 +151,7 @@ function Stack:getMatchingPanels()
     -- to the right
     for column = candidatePanels[i].column + 1, self.width do
       panel = panels[candidatePanels[i].row][column]
-      if panel.color == candidatePanels[i].color and canMatch(panel) then
+      if panel.color == candidatePanels[i].color and panel:canMatch() then
         horizontallyConnected[#horizontallyConnected + 1] = panel
       else
         break
@@ -330,8 +317,15 @@ end
 function Stack:matchGarbagePanels(garbagePanels, garbageMatchTime, isChain, onScreenCount)
   garbagePanels = sortByPopOrder(garbagePanels, true)
 
+  local matchingPanels = self:getMatchingPanels()
+  local comboSize = #matchingPanels
+  local metalCount = getMetalCount(matchingPanels)
+
   if self:shouldChangeSoundEffects() then
+    -- Combo and metal sounds still play when clearing garbage with a combo or metal. Need to figure this out.
+    if self.chain_counter == 0 and comboSize < 4 and metalCount == 0 then
     SFX_garbage_match_play = true
+    end
   end
   
   for i = 1, #garbagePanels do
@@ -347,7 +341,7 @@ function Stack:matchGarbagePanels(garbagePanels, garbageMatchTime, isChain, onSc
   end
 
   self:convertGarbagePanels(isChain)
-end
+end  
 
 -- checks the stack for garbage panels that have a negative y offset and assigns them a color from the gpanel_buffer
 function Stack:convertGarbagePanels(isChain)
@@ -361,7 +355,27 @@ function Stack:convertGarbagePanels(isChain)
         if garbagePanelRow == nil then
           garbagePanelRow = self:getGarbagePanelRow()
         end
-        panel.color = string.sub(garbagePanelRow, column, column) + 0
+        local panel_char = string.sub(garbagePanelRow, column, column)
+        local panel_color
+          if panel_char >= "A" and panel_char <= "Z" then
+            if self.metal_panels_queued > 0 then
+                panel_color = 8
+              self.metal_panels_queued = self.metal_panels_queued - 1
+            else
+              panel_color = PanelGenerator.PANEL_COLOR_TO_NUMBER[panel_char]
+            end
+          elseif panel_char >= "a" and panel_char <= "z" then
+            if self.metal_panels_queued > 0 then
+              panel_color = 8
+              self.metal_panels_queued = self.metal_panels_queued - 1
+            else
+              panel_color = PanelGenerator.PANEL_COLOR_TO_NUMBER[panel_char]
+            end
+          else
+            panel_color = PanelGenerator.PANEL_COLOR_TO_NUMBER[panel_char]
+          end
+        panel.color = panel_color
+        self.analytic:register_garbage_cleared()
         if isChain then
           panel.chaining = true
         end
@@ -389,21 +403,43 @@ end
 
 function Stack:pushGarbage(coordinate, isChain, comboSize, metalCount)
   for i = 3, metalCount do
+    local metal_pieces = 1
     if self.garbageTarget and self.telegraph then
       self.telegraph:push({width = 6, height = 1, isMetal = true, isChain = false}, coordinate.column, coordinate.row, self.clock)
     end
     self:recordComboHistory(self.clock, 6, 1, true)
     self.analytic:registerShock()
+    self.analytic:register_garbage_sent(metal_pieces)
   end
 
   local combo_pieces = combo_garbage[comboSize]
-  for i = 1, #combo_pieces do
-    if self.garbageTarget and self.telegraph then
-      -- Give out combo garbage based on the lookup table, even if we already made shock garbage,
-      self.telegraph:push({width = combo_pieces[i], height = 1, isMetal = false, isChain = false}, coordinate.column, coordinate.row,
+  local combo_pieces_classic = combo_garbage_classic[comboSize]
+  local actual_pieces = 1
+
+  if self.level then
+    if self.chain_counter and self.chain_counter < 3 then 
+      -- Modern Combo Garbage
+      for i = 1, #combo_pieces do
+        if self.garbageTarget and self.telegraph then
+          -- Give out combo garbage based on the lookup table, even if we already made shock garbage,
+          self.telegraph:push({width = comboSize % 4 + 3, height = math.ceil((comboSize - 3) / 4), isMetal = false, isChain = false}, coordinate.column, coordinate.row,
                           self.clock)
+          self:recordComboHistory(self.clock, combo_pieces[i], 1, false)
+          self.analytic:register_garbage_sent(actual_pieces)
+        end
+      end
+    else
+      --Classic Combo Garbage
+      for i = 1, #combo_pieces_classic do
+        if self.garbageTarget and self.telegraph then
+          -- Give out combo garbage based on the lookup table, even if we already made shock garbage,
+          self.telegraph:push({width = comboSize % 4 + 3, height = 1, isMetal = false, isChain = false}, coordinate.column, coordinate.row,
+                            self.clock)
+        end
+        self:recordComboHistory(self.clock, combo_pieces_classic[i], 1, false)
+        self.analytic:register_garbage_sent(actual_pieces)
+      end  
     end
-    self:recordComboHistory(self.clock, combo_pieces[i], 1, false)
   end
 
   if isChain then
@@ -441,33 +477,39 @@ end
 -- calculates the stoptime that would be awarded for a certain chain/combo based on the stack's settings
 function Stack:calculateStopTime(comboSize, toppedOut, isChain, chainCounter)
   local stopTime = 0
+  local classic_margin = self.garbage_margin
+
   if comboSize > 3 or isChain then
     if toppedOut and isChain then
       if self.level then
         local length = (chainCounter > 4) and 6 or chainCounter
-        stopTime = -8 * self.level + 168 + (length - 1) * (-2 * self.level + 22)
+          stopTime = math.min(300, math.max(0, math.floor((((self.chain_constant * 1.1 ^ (length - 2)) * 1.1) + self.chain_coefficient)
+          * ((classic_margin - self.garbage_q:len()) / classic_margin))))
       else
-        stopTime = stop_time_danger[self.difficulty]
+        stopTime = math.min(300, math.max(0, math.floor(stop_time_danger[self.difficulty] * (1 - ( self.speed / 100)))))
       end
     elseif toppedOut then
       if self.level then
         local length = (comboSize < 9) and 2 or 3
-        stopTime = self.chain_coefficient * length + self.chain_constant
+          stopTime = math.min(300, math.max(0, math.floor((((self.chain_constant * 1.05 ^ (comboSize - 4)) * 1.05) + self.chain_coefficient)
+          * ((classic_margin - self.garbage_q:len()) / classic_margin))))
       else
-        stopTime = stop_time_danger[self.difficulty]
+        stopTime = math.min(300, math.max(0, math.floor(stop_time_danger[self.difficulty] * (1 - ( self.speed / 100)))))
       end
     elseif isChain then
       if self.level then
         local length = math.min(chainCounter, 13)
-        stopTime = self.chain_coefficient * length + self.chain_constant
+        stopTime = math.min(300, math.max(0, math.floor(((self.chain_constant * 1.1 ^ (length - 2)) + self.chain_coefficient)
+        * ((classic_margin - self.garbage_q:len()) / classic_margin))))
       else
-        stopTime = stop_time_chain[self.difficulty]
+        stopTime = math.min(300, math.max(0, math.floor(stop_time_chain[self.difficulty] * (1 - ( self.speed / 100)))))
       end
     else
       if self.level then
-        stopTime = self.combo_coefficient * comboSize + self.combo_constant
+        stopTime = math.min(300, math.max(0, math.floor(((self.combo_constant * 1.05 ^ (comboSize - 4)) + self.combo_coefficient)
+        * ((classic_margin - self.garbage_q:len()) / classic_margin))))
       else
-        stopTime = stop_time_combo[self.difficulty]
+        stopTime = math.min(300, math.max(0, math.floor(stop_time_combo[self.difficulty] * (1 - ( self.speed / 100)))))
       end
     end
   end
@@ -525,14 +567,19 @@ function Stack:updateScoreWithBonus(comboSize)
 end
 
 function Stack:updateScoreWithCombo(comboSize)
-  if comboSize > 3 then
+  if comboSize >= 3 then
     if (score_mode == SCOREMODE_TA) then
-      self.score = self.score + score_combo_TA[math.min(30, comboSize)]
-    elseif (score_mode == SCOREMODE_PDP64) then
-      if (comboSize < 41) then
-        self.score = self.score + score_combo_PdP64[comboSize]
+      if comboSize == 3 then
+        self.score = self.score + 27
       else
-        self.score = self.score + 20400 + ((comboSize - 40) * 800)
+        self.score = self.score + math.floor(math.ceil(math.log(factorial(comboSize)) * 10) * 10 * math.max(1, self.chain_counter))
+      end
+    elseif (score_mode == SCOREMODE_PDP64) then
+      if comboSize == 3 then
+        self.score = self.score
+      else
+        self.score = self.score + math.floor((((comboSize - 3) * 100) * math.max(1, self.chain_counter)))
+        -- self.score = self.score + math.floor((((comboSize - 3) * 100) * math.max(1, self.chain_counter)) * (math.ceil(self.speed / 9) / 10))
       end
     end
   end
@@ -541,10 +588,14 @@ end
 function Stack:updateScoreWithChain()
   local chain_bonus = self.chain_counter
   if (score_mode == SCOREMODE_TA) then
-    if (self.chain_counter > 13) then
-      chain_bonus = 0
+    self.score = self.score + math.floor(math.ceil(math.log(factorial(chain_bonus)) * 100))
+  elseif (score_mode == SCOREMODE_PDP64) then
+    if chain_bonus == 0 then
+      self.score = self.score
+    else
+      self.score = self.score + math.floor(((((chain_bonus - 1) * chain_bonus) / 2) * 50))
+      -- self.score = self.score + math.floor(((((chain_bonus - 1) * chain_bonus) / 2) * 50)  * (math.ceil(self.speed / 9) / 10))
     end
-    self.score = self.score + score_chain_TA[chain_bonus]
   end
 end
 
@@ -553,7 +604,7 @@ function Stack:clearChainingFlags()
     for column = 1, self.width do
       local panel = self.panels[row][column]
       -- if a chaining panel wasn't matched but was eligible, we have to remove its chain flag
-      if not panel.matching and panel.chaining and not panel.matchAnyway and (canMatch(panel) or panel.color == 9) then
+      if not panel.matching and panel.chaining and not panel.matchAnyway and panel:canMatch() then
         if row > 1 then
           -- no swapping panel below so this panel loses its chain flag
           if self.panels[row - 1][column].state ~= "swapping" then
